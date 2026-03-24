@@ -1,0 +1,19 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Headcount Integration'|t('diploma') %}
+{% set selectedSubnavItem = 'settings' %}
+{% set fullPageForm = true %}
+
+{% block pluginContent %}
+    <input type="hidden" name="action" value="diploma/settings/save">
+    {{ redirectInput('diploma/settings/headcount') }}
+
+    <div id="fields">
+        <h2>{{ 'Headcount Membership Integration'|t('diploma') }}</h2>
+
+        <p class="light">{{ 'When a Headcount subscription is created for a plan mapped to a course, students will be automatically enrolled. When the subscription expires or is cancelled, enrollment will be set to expired.'|t('diploma') }}</p>
+
+        <p class="light">{{ 'Plan-to-course mappings are configured via the Headcount plan settings.'|t('diploma') }}</p>
+    </div>
+{% endblock %}

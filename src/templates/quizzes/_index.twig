@@ -1,0 +1,12 @@
+{% extends '_layouts/elementindex' %}
+
+{% set title = 'Quizzes'|t('diploma') %}
+{% set selectedSubnavItem = 'quizzes' %}
+{% set elementType = elementType %}
+{% set canHaveDrafts = false %}
+{% set showSiteMenu = false %}
+{% set showStatusMenu = false %}
+
+{% block actionButton %}
+    <a href="{{ url('diploma/quizzes/new') }}" class="btn submit">{{ 'New Quiz'|t('diploma') }}</a>
+{% endblock %}

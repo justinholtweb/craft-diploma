@@ -1,0 +1,37 @@
+{% extends 'diploma/_layouts/plugin' %}
+
+{% set title = 'Enrollments'|t('diploma') %}
+{% set selectedSubnavItem = 'enrollments' %}
+
+{% block pluginContent %}
+    {% if enrollments|length %}
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    <th>{{ 'ID'|t('diploma') }}</th>
+                    <th>{{ 'User'|t('diploma') }}</th>
+                    <th>{{ 'Course'|t('diploma') }}</th>
+                    <th>{{ 'Status'|t('diploma') }}</th>
+                    <th>{{ 'Source'|t('diploma') }}</th>
+                    <th>{{ 'Enrolled'|t('diploma') }}</th>
+                    <th>{{ 'Completed'|t('diploma') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for enrollment in enrollments %}
+                    <tr>
+                        <td><a href="{{ url('diploma/enrollments/' ~ enrollment.id) }}">#{{ enrollment.id }}</a></td>
+                        <td>{{ enrollment.userId }}</td>
+                        <td>{{ enrollment.courseId }}</td>
+                        <td>{{ enrollment.enrollmentStatus|capitalize }}</td>
+                        <td>{{ enrollment.source ?? '—' }}</td>
+                        <td>{{ enrollment.enrolledAt|date('M j, Y g:ia') }}</td>
+                        <td>{{ enrollment.completedAt ? enrollment.completedAt|date('M j, Y g:ia') : '—' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="zilch">{{ 'No enrollments yet.'|t('diploma') }}</p>
+    {% endif %}
+{% endblock %}

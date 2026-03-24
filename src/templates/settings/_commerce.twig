@@ -1,0 +1,25 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Commerce Integration'|t('diploma') %}
+{% set selectedSubnavItem = 'settings' %}
+{% set fullPageForm = true %}
+
+{% block pluginContent %}
+    <input type="hidden" name="action" value="diploma/settings/save">
+    {{ redirectInput('diploma/settings/commerce') }}
+
+    <div id="fields">
+        <h2>{{ 'Craft Commerce Integration'|t('diploma') }}</h2>
+
+        {{ forms.lightswitchField({
+            label: 'Auto-Enroll on Purchase'|t('diploma'),
+            instructions: 'Automatically enroll users when they purchase a course product.'|t('diploma'),
+            id: 'autoEnrollOnPurchase',
+            name: 'settings[autoEnrollOnPurchase]',
+            on: settings.autoEnrollOnPurchase,
+        }) }}
+
+        <p class="light">{{ 'Configure product-to-course mappings by adding a Diploma Course relation field to your Commerce product types.'|t('diploma') }}</p>
+    </div>
+{% endblock %}

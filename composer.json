@@ -1,0 +1,38 @@
+{
+    "name": "justinholtweb/craft-diploma",
+    "description": "LMS plugin for Craft CMS 5. Create courses, lessons, quizzes, track progress, and issue certificates.",
+    "type": "craft-plugin",
+    "license": "proprietary",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^8.2",
+        "craftcms/cms": "^5.3.0"
+    },
+    "require-dev": {
+        "codeception/codeception": "^5.0",
+        "craftcms/ecs": "dev-main",
+        "craftcms/phpstan": "dev-main"
+    },
+    "suggest": {
+        "dompdf/dompdf": "Required for PDF certificate generation (Pro edition)"
+    },
+    "autoload": {
+        "psr-4": {
+            "justinholtweb\\diploma\\": "src/"
+        }
+    },
+    "support": {
+        "issues": "https://github.com/justinholtweb/craft-diploma/issues",
+        "source": "https://github.com/justinholtweb/craft-diploma"
+    },
+    "extra": {
+        "handle": "diploma",
+        "name": "Diploma",
+        "developer": "Justin Holt",
+        "developerUrl": "https://github.com/justinholtweb",
+        "documentationUrl": "https://github.com/justinholtweb/craft-diploma",
+        "description": "LMS plugin for Craft CMS — courses, quizzes, progress tracking, and certificates.",
+        "class": "justinholtweb\\diploma\\Plugin"
+    }
+}

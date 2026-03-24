@@ -1,0 +1,52 @@
+{% import '_includes/forms' as forms %}
+
+<div id="fields">
+    <h2>{{ 'General'|t('diploma') }}</h2>
+
+    {{ forms.lightswitchField({
+        label: 'Enable Certificates'|t('diploma'),
+        instructions: 'Automatically issue certificates when courses are completed.'|t('diploma'),
+        id: 'enableCertificates',
+        name: 'settings[enableCertificates]',
+        on: settings.enableCertificates,
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: 'Auto-Issue Certificates'|t('diploma'),
+        instructions: 'Generate certificates automatically when a student completes a course.'|t('diploma'),
+        id: 'autoIssueCertificate',
+        name: 'settings[autoIssueCertificate]',
+        on: settings.autoIssueCertificate,
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: 'Require Passing Quiz'|t('diploma'),
+        instructions: 'Require students to pass the course quiz before marking as completed.'|t('diploma'),
+        id: 'requirePassingQuiz',
+        name: 'settings[requirePassingQuiz]',
+        on: settings.requirePassingQuiz,
+    }) }}
+
+    {{ forms.textField({
+        label: 'Default Passing Score (%)'|t('diploma'),
+        instructions: 'Default minimum score for quizzes when not set per quiz.'|t('diploma'),
+        id: 'defaultPassingScore',
+        name: 'settings[defaultPassingScore]',
+        value: settings.defaultPassingScore,
+        type: 'number',
+        min: 0,
+        max: 100,
+    }) }}
+
+    <hr>
+
+    <h2>{{ 'Integration Settings'|t('diploma') }}</h2>
+
+    <p>
+        <a href="{{ url('diploma/settings/certificates') }}">{{ 'Certificate Templates'|t('diploma') }}</a>
+        {% if plugin.is('pro') %}
+            | <a href="{{ url('diploma/settings/commerce') }}">{{ 'Commerce Integration'|t('diploma') }}</a>
+            | <a href="{{ url('diploma/settings/headcount') }}">{{ 'Headcount Integration'|t('diploma') }}</a>
+        {% endif %}
+    </p>
+</div>

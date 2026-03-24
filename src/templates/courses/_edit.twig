@@ -1,0 +1,124 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set selectedSubnavItem = 'courses' %}
+{% set fullPageForm = true %}
+
+{% block pluginContent %}
+    <input type="hidden" name="action" value="diploma/courses/save">
+    {{ redirectInput('diploma/courses') }}
+
+    {% if not isNew %}
+        <input type="hidden" name="courseId" value="{{ course.id }}">
+    {% endif %}
+
+    <div id="fields">
+        {{ forms.textField({
+            label: 'Title'|t('diploma'),
+            instructions: 'The name of the course.'|t('diploma'),
+            id: 'title',
+            name: 'title',
+            value: course.title,
+            errors: course.getErrors('title'),
+            required: true,
+            first: true,
+        }) }}
+
+        <hr>
+
+        <h2>{{ 'Course Settings'|t('diploma') }}</h2>
+
+        <div class="flex">
+            <div class="flex-grow">
+                {{ forms.selectField({
+                    label: 'Status'|t('diploma'),
+                    id: 'courseStatus',
+                    name: 'courseStatus',
+                    value: course.courseStatus,
+                    options: statusOptions,
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.selectField({
+                    label: 'Difficulty Level'|t('diploma'),
+                    id: 'difficultyLevel',
+                    name: 'difficultyLevel',
+                    value: course.difficultyLevel,
+                    options: difficultyOptions,
+                }) }}
+            </div>
+        </div>
+
+        <div class="flex">
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: 'Estimated Duration (minutes)'|t('diploma'),
+                    id: 'estimatedDuration',
+                    name: 'estimatedDuration',
+                    value: course.estimatedDuration,
+                    type: 'number',
+                    min: 0,
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: 'Enrollment Limit'|t('diploma'),
+                    instructions: 'Leave blank for unlimited.'|t('diploma'),
+                    id: 'enrollmentLimit',
+                    name: 'enrollmentLimit',
+                    value: course.enrollmentLimit,
+                    type: 'number',
+                    min: 0,
+                }) }}
+            </div>
+        </div>
+
+        {{ forms.textField({
+            label: 'Passing Score (%)'|t('diploma'),
+            instructions: 'Minimum quiz score to complete the course. Leave blank if no quiz requirement.'|t('diploma'),
+            id: 'passingScore',
+            name: 'passingScore',
+            value: course.passingScore,
+            type: 'number',
+            min: 0,
+            max: 100,
+        }) }}
+    </div>
+
+    {% if not isNew %}
+        <hr>
+
+        <h2>{{ 'Lessons'|t('diploma') }}</h2>
+
+        {% if lessons|length %}
+            <ul class="diploma-lesson-list" id="lesson-list">
+                {% for lesson in lessons %}
+                    <li data-id="{{ lesson.id }}">
+                        <span class="lesson-handle" data-icon="move"></span>
+                        <a href="{{ lesson.cpEditUrl }}" class="lesson-title">{{ lesson.title }}</a>
+                        <span class="lesson-meta">{{ lesson.lessonType|capitalize }} {% if lesson.estimatedDuration %}· {{ lesson.estimatedDuration }} min{% endif %}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="zilch">{{ 'No lessons yet.'|t('diploma') }}</p>
+        {% endif %}
+
+        <div class="buttons" style="margin-top: 12px;">
+            <a href="{{ url('diploma/courses/' ~ course.id ~ '/lessons/new') }}" class="btn">{{ 'New Lesson'|t('diploma') }}</a>
+        </div>
+
+        <hr>
+
+        <div class="meta read-only">
+            <div class="data">
+                <dt>{{ 'Enrollments'|t('diploma') }}</dt>
+                <dd>{{ course.enrollmentCount }}</dd>
+            </div>
+            <div class="data">
+                <dt>{{ 'Created'|t('diploma') }}</dt>
+                <dd>{{ course.dateCreated|date('M j, Y g:ia') }}</dd>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

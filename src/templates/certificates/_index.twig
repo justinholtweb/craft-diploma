@@ -1,0 +1,35 @@
+{% extends 'diploma/_layouts/plugin' %}
+
+{% set title = 'Certificates'|t('diploma') %}
+{% set selectedSubnavItem = 'certificates' %}
+
+{% block pluginContent %}
+    {% if certificates|length %}
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    <th>{{ 'Code'|t('diploma') }}</th>
+                    <th>{{ 'User'|t('diploma') }}</th>
+                    <th>{{ 'Course'|t('diploma') }}</th>
+                    <th>{{ 'Issued'|t('diploma') }}</th>
+                    <th>{{ 'Actions'|t('diploma') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cert in certificates %}
+                    <tr>
+                        <td><code>{{ cert.verificationCode }}</code></td>
+                        <td>{{ cert.metadata.userName ?? cert.userId }}</td>
+                        <td>{{ cert.metadata.courseTitle ?? cert.courseId }}</td>
+                        <td>{{ cert.issuedAt|date('M j, Y g:ia') }}</td>
+                        <td>
+                            <a href="{{ cert.verifyUrl }}" target="_blank">{{ 'Verify'|t('diploma') }}</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="zilch">{{ 'No certificates issued yet.'|t('diploma') }}</p>
+    {% endif %}
+{% endblock %}

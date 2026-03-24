@@ -1,0 +1,40 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Certificate Settings'|t('diploma') %}
+{% set selectedSubnavItem = 'settings' %}
+{% set fullPageForm = true %}
+
+{% block pluginContent %}
+    <input type="hidden" name="action" value="diploma/settings/save">
+    {{ redirectInput('diploma/settings/certificates') }}
+
+    <div id="fields">
+        <h2>{{ 'Certificate Template'|t('diploma') }}</h2>
+
+        {{ forms.textField({
+            label: 'Certificate Title'|t('diploma'),
+            instructions: 'Title shown on certificates.'|t('diploma'),
+            id: 'certificateTitle',
+            name: 'settings[certificateTitle]',
+            value: settings.certificateTitle,
+        }) }}
+
+        {{ forms.textareaField({
+            label: 'Certificate Body'|t('diploma'),
+            instructions: 'Body text. Use {userName} and {courseTitle} as placeholders.'|t('diploma'),
+            id: 'certificateBody',
+            name: 'settings[certificateBody]',
+            value: settings.certificateBody,
+            rows: 4,
+        }) }}
+
+        {{ forms.textField({
+            label: 'Custom Template Path'|t('diploma'),
+            instructions: 'Path to a custom Twig template for certificates. Leave blank to use the default.'|t('diploma'),
+            id: 'certificateTemplatePath',
+            name: 'settings[certificateTemplatePath]',
+            value: settings.certificateTemplatePath,
+        }) }}
+    </div>
+{% endblock %}

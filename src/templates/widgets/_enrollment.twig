@@ -1,0 +1,24 @@
+<div class="diploma-widget">
+    {% if enrollments|length %}
+        <table class="data fullwidth" style="font-size: 12px;">
+            <thead>
+                <tr>
+                    <th>{{ 'User'|t('diploma') }}</th>
+                    <th>{{ 'Status'|t('diploma') }}</th>
+                    <th>{{ 'Date'|t('diploma') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for enrollment in enrollments %}
+                    <tr>
+                        <td>{{ enrollment.userId }}</td>
+                        <td>{{ enrollment.enrollmentStatus|capitalize }}</td>
+                        <td>{{ enrollment.enrolledAt|date('M j') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="zilch" style="font-size: 12px;">{{ 'No enrollments yet.'|t('diploma') }}</p>
+    {% endif %}
+</div>

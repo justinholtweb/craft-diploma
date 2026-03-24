@@ -1,0 +1,12 @@
+{% extends '_layouts/elementindex' %}
+
+{% set title = 'Courses'|t('diploma') %}
+{% set selectedSubnavItem = 'courses' %}
+{% set elementType = elementType %}
+{% set canHaveDrafts = false %}
+{% set showSiteMenu = false %}
+{% set showStatusMenu = true %}
+
+{% block actionButton %}
+    <a href="{{ url('diploma/courses/new') }}" class="btn submit">{{ 'New Course'|t('diploma') }}</a>
+{% endblock %}

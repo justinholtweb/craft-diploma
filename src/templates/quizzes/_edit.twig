@@ -1,0 +1,141 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set selectedSubnavItem = 'quizzes' %}
+{% set fullPageForm = true %}
+
+{% block pluginContent %}
+    <input type="hidden" name="action" value="diploma/quizzes/save">
+    {{ redirectInput('diploma/quizzes') }}
+
+    {% if not isNew %}
+        <input type="hidden" name="quizId" value="{{ quiz.id }}">
+    {% endif %}
+
+    <div id="fields">
+        {{ forms.textField({
+            label: 'Title'|t('diploma'),
+            instructions: 'The name of the quiz.'|t('diploma'),
+            id: 'title',
+            name: 'title',
+            value: quiz.title,
+            errors: quiz.getErrors('title'),
+            required: true,
+            first: true,
+        }) }}
+
+        <hr>
+
+        <h2>{{ 'Quiz Settings'|t('diploma') }}</h2>
+
+        {{ forms.selectField({
+            label: 'Course'|t('diploma'),
+            instructions: 'Attach this quiz to a course.'|t('diploma'),
+            id: 'courseId',
+            name: 'courseId',
+            value: quiz.courseId,
+            options: courseOptions,
+        }) }}
+
+        <div class="flex">
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: 'Passing Score (%)'|t('diploma'),
+                    id: 'passingScore',
+                    name: 'passingScore',
+                    value: quiz.passingScore,
+                    type: 'number',
+                    min: 0,
+                    max: 100,
+                    required: true,
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: 'Time Limit (seconds)'|t('diploma'),
+                    instructions: 'Leave blank for no time limit.'|t('diploma'),
+                    id: 'timeLimit',
+                    name: 'timeLimit',
+                    value: quiz.timeLimit,
+                    type: 'number',
+                    min: 0,
+                }) }}
+            </div>
+        </div>
+
+        <div class="flex">
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: 'Max Attempts'|t('diploma'),
+                    instructions: 'Leave blank for unlimited.'|t('diploma'),
+                    id: 'maxAttempts',
+                    name: 'maxAttempts',
+                    value: quiz.maxAttempts,
+                    type: 'number',
+                    min: 1,
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: 'Questions Per Attempt'|t('diploma'),
+                    instructions: 'Leave blank to show all.'|t('diploma'),
+                    id: 'questionsPerAttempt',
+                    name: 'questionsPerAttempt',
+                    value: quiz.questionsPerAttempt,
+                    type: 'number',
+                    min: 1,
+                }) }}
+            </div>
+        </div>
+
+        {{ forms.lightswitchField({
+            label: 'Randomize Questions'|t('diploma'),
+            instructions: 'Shuffle question order for each attempt.'|t('diploma'),
+            id: 'randomizeQuestions',
+            name: 'randomizeQuestions',
+            on: quiz.randomizeQuestions,
+        }) }}
+    </div>
+
+    {% if not isNew %}
+        <hr>
+
+        <h2>{{ 'Questions'|t('diploma') }} ({{ questions|length }})</h2>
+
+        <div id="quiz-builder" data-quiz-id="{{ quiz.id }}">
+            {% if questions|length %}
+                <div class="diploma-question-list" id="question-list">
+                    {% for question in questions %}
+                        <div class="question-item" data-id="{{ question.id }}">
+                            <div class="question-header">
+                                <strong>{{ loop.index }}. {{ question.questionText|truncate(80) }}</strong>
+                                <span class="light">{{ question.questionType }} · {{ question.points }} pt{{ question.points != 1 ? 's' : '' }}</span>
+                            </div>
+                            {% if question.answers|length %}
+                                <ul style="margin: 4px 0 0 20px;">
+                                    {% for answer in question.answers %}
+                                        <li>
+                                            {% if answer.isCorrect %}<strong>{{ answer.answerText }} ✓</strong>{% else %}{{ answer.answerText }}{% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            {% if question.explanation %}
+                                <p class="light" style="margin-top: 4px;"><em>{{ question.explanation }}</em></p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="zilch">{{ 'No questions yet.'|t('diploma') }}</p>
+            {% endif %}
+        </div>
+
+        <div class="meta read-only" style="margin-top: 16px;">
+            <div class="data">
+                <dt>{{ 'Created'|t('diploma') }}</dt>
+                <dd>{{ quiz.dateCreated|date('M j, Y g:ia') }}</dd>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

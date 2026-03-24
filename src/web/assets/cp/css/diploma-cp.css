@@ -1,0 +1,99 @@
+/* Diploma CP Styles */
+
+.diploma-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.diploma-stat-card {
+    background: var(--ui-control-bg-color);
+    border: 1px solid var(--hairline-color);
+    border-radius: var(--large-border-radius);
+    padding: 20px;
+    text-align: center;
+}
+
+.diploma-stat-card h3 {
+    font-size: 13px;
+    color: var(--medium-text-color);
+    margin: 0 0 8px;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.diploma-stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text-color);
+    line-height: 1;
+}
+
+.diploma-lesson-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.diploma-lesson-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid var(--hairline-color);
+    border-radius: var(--medium-border-radius);
+    margin-bottom: 4px;
+    background: var(--ui-control-bg-color);
+    cursor: grab;
+}
+
+.diploma-lesson-list li .lesson-handle {
+    color: var(--light-text-color);
+    margin-right: 10px;
+    cursor: grab;
+}
+
+.diploma-lesson-list li .lesson-title {
+    flex-grow: 1;
+}
+
+.diploma-lesson-list li .lesson-meta {
+    color: var(--medium-text-color);
+    font-size: 12px;
+}
+
+.diploma-question-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.diploma-question-list .question-item {
+    border: 1px solid var(--hairline-color);
+    border-radius: var(--medium-border-radius);
+    padding: 16px;
+    margin-bottom: 8px;
+    background: var(--ui-control-bg-color);
+}
+
+.diploma-question-list .question-item .question-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.diploma-progress-bar {
+    height: 8px;
+    background: var(--hairline-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.diploma-progress-bar .progress-fill {
+    height: 100%;
+    background: var(--link-color);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}

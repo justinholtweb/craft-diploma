@@ -1,0 +1,20 @@
+<div class="diploma-widget">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+            <div class="light" style="font-size: 11px; text-transform: uppercase;">{{ 'Courses'|t('diploma') }}</div>
+            <div style="font-size: 24px; font-weight: 600;">{{ stats.publishedCourses }}</div>
+        </div>
+        <div>
+            <div class="light" style="font-size: 11px; text-transform: uppercase;">{{ 'Enrollments'|t('diploma') }}</div>
+            <div style="font-size: 24px; font-weight: 600;">{{ stats.activeEnrollments }}</div>
+        </div>
+        <div>
+            <div class="light" style="font-size: 11px; text-transform: uppercase;">{{ 'Completed'|t('diploma') }}</div>
+            <div style="font-size: 24px; font-weight: 600;">{{ stats.completedEnrollments }}</div>
+        </div>
+        <div>
+            <div class="light" style="font-size: 11px; text-transform: uppercase;">{{ 'Certificates'|t('diploma') }}</div>
+            <div style="font-size: 24px; font-weight: 600;">{{ stats.totalCertificates }}</div>
+        </div>
+    </div>
+</div>

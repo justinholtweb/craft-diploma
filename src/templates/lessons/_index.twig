@@ -1,0 +1,29 @@
+{% extends 'diploma/_layouts/plugin' %}
+
+{% set title = course.title ~ ' — Lessons'|t('diploma') %}
+{% set selectedSubnavItem = 'courses' %}
+
+{% block pluginContent %}
+    <div class="buttons" style="margin-bottom: 16px;">
+        <a href="{{ url('diploma/courses/' ~ course.id) }}" class="btn">{{ '← Back to Course'|t('diploma') }}</a>
+        <a href="{{ url('diploma/courses/' ~ course.id ~ '/lessons/new') }}" class="btn submit">{{ 'New Lesson'|t('diploma') }}</a>
+    </div>
+
+    {% if lessons|length %}
+        <ul class="diploma-lesson-list" id="lesson-list" data-reorder-url="{{ actionUrl('diploma/lessons/reorder') }}">
+            {% for lesson in lessons %}
+                <li data-id="{{ lesson.id }}">
+                    <span class="lesson-handle" data-icon="move"></span>
+                    <a href="{{ lesson.cpEditUrl }}" class="lesson-title">{{ lesson.title }}</a>
+                    <span class="lesson-meta">
+                        {{ lesson.lessonType|capitalize }}
+                        {% if lesson.estimatedDuration %}· {{ lesson.estimatedDuration }} min{% endif %}
+                        {% if lesson.isFree %} · <span class="status green"></span> Free{% endif %}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="zilch">{{ 'No lessons yet. Create the first lesson for this course.'|t('diploma') }}</p>
+    {% endif %}
+{% endblock %}

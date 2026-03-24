@@ -1,0 +1,54 @@
+{% extends 'diploma/_layouts/plugin' %}
+
+{% set title = 'Dashboard'|t('diploma') %}
+{% set selectedSubnavItem = 'dashboard' %}
+
+{% block pluginContent %}
+    <div class="diploma-stats">
+        <div class="diploma-stat-card">
+            <h3>{{ 'Published Courses'|t('diploma') }}</h3>
+            <div class="stat-value">{{ publishedCourses }}</div>
+        </div>
+        <div class="diploma-stat-card">
+            <h3>{{ 'Total Courses'|t('diploma') }}</h3>
+            <div class="stat-value">{{ totalCourses }}</div>
+        </div>
+        <div class="diploma-stat-card">
+            <h3>{{ 'Active Enrollments'|t('diploma') }}</h3>
+            <div class="stat-value">{{ activeEnrollments }}</div>
+        </div>
+        <div class="diploma-stat-card">
+            <h3>{{ 'Total Enrollments'|t('diploma') }}</h3>
+            <div class="stat-value">{{ totalEnrollments }}</div>
+        </div>
+    </div>
+
+    <div class="pane">
+        <h2>{{ 'Recent Enrollments'|t('diploma') }}</h2>
+
+        {% if recentEnrollments|length %}
+            <table class="data fullwidth">
+                <thead>
+                    <tr>
+                        <th>{{ 'User'|t('diploma') }}</th>
+                        <th>{{ 'Course'|t('diploma') }}</th>
+                        <th>{{ 'Status'|t('diploma') }}</th>
+                        <th>{{ 'Enrolled'|t('diploma') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in recentEnrollments %}
+                        <tr>
+                            <td>{{ enrollment.userId }}</td>
+                            <td>{{ enrollment.courseId }}</td>
+                            <td>{{ enrollment.enrollmentStatus|capitalize }}</td>
+                            <td>{{ enrollment.enrolledAt|date('M j, Y g:ia') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="zilch">{{ 'No enrollments yet.'|t('diploma') }}</p>
+        {% endif %}
+    </div>
+{% endblock %}

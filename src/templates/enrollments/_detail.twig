@@ -1,0 +1,82 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Enrollment #' ~ enrollment.id %}
+{% set selectedSubnavItem = 'enrollments' %}
+
+{% block pluginContent %}
+    <div class="meta">
+        <div class="data">
+            <dt>{{ 'User'|t('diploma') }}</dt>
+            <dd>
+                {% if user %}
+                    <a href="{{ user.cpEditUrl }}">{{ user.friendlyName }}</a> ({{ user.email }})
+                {% else %}
+                    {{ 'Unknown'|t('diploma') }}
+                {% endif %}
+            </dd>
+        </div>
+        <div class="data">
+            <dt>{{ 'Course'|t('diploma') }}</dt>
+            <dd>
+                {% if course %}
+                    <a href="{{ course.cpEditUrl }}">{{ course.title }}</a>
+                {% else %}
+                    {{ 'Unknown'|t('diploma') }}
+                {% endif %}
+            </dd>
+        </div>
+        <div class="data">
+            <dt>{{ 'Status'|t('diploma') }}</dt>
+            <dd>{{ enrollment.enrollmentStatus|capitalize }}</dd>
+        </div>
+        <div class="data">
+            <dt>{{ 'Source'|t('diploma') }}</dt>
+            <dd>{{ enrollment.source ?? '—' }}</dd>
+        </div>
+        <div class="data">
+            <dt>{{ 'Enrolled'|t('diploma') }}</dt>
+            <dd>{{ enrollment.enrolledAt|date('M j, Y g:ia') }}</dd>
+        </div>
+        <div class="data">
+            <dt>{{ 'Completed'|t('diploma') }}</dt>
+            <dd>{{ enrollment.completedAt ? enrollment.completedAt|date('M j, Y g:ia') : '—' }}</dd>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>{{ 'Progress'|t('diploma') }}</h2>
+
+    <div class="diploma-progress-bar" style="margin-bottom: 8px;">
+        <div class="progress-fill" style="width: {{ progress.percentage }}%"></div>
+    </div>
+    <p>{{ progress.completedLessons }} / {{ progress.totalLessons }} {{ 'lessons completed'|t('diploma') }} ({{ progress.percentage }}%)</p>
+
+    <hr>
+
+    <h2>{{ 'Actions'|t('diploma') }}</h2>
+
+    <form method="post">
+        {{ csrfInput() }}
+        <input type="hidden" name="action" value="diploma/enrollments/update-status">
+        <input type="hidden" name="enrollmentId" value="{{ enrollment.id }}">
+
+        <div class="flex">
+            {{ forms.selectField({
+                label: 'Update Status'|t('diploma'),
+                name: 'status',
+                value: enrollment.enrollmentStatus,
+                options: [
+                    { label: 'Active', value: 'active' },
+                    { label: 'Completed', value: 'completed' },
+                    { label: 'Cancelled', value: 'cancelled' },
+                    { label: 'Expired', value: 'expired' },
+                ],
+            }) }}
+            <div style="align-self: flex-end; margin-bottom: 14px;">
+                <button type="submit" class="btn submit">{{ 'Update'|t('diploma') }}</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}

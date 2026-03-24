@@ -1,0 +1,56 @@
+/* Diploma Frontend Styles */
+
+.diploma-progress {
+    margin: 16px 0;
+}
+
+.diploma-progress-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.diploma-progress-bar .progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.diploma-lesson-complete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.diploma-lesson-complete-btn:hover {
+    background: #2563eb;
+}
+
+.diploma-lesson-complete-btn.completed {
+    background: #10b981;
+    cursor: default;
+}
+
+.diploma-quiz-timer {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 8px 16px;
+    background: #fef3c7;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.diploma-quiz-timer.warning {
+    background: #fee2e2;
+    color: #dc2626;
+}

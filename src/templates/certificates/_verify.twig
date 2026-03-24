@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ 'Certificate Verification'|t('diploma') }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 0 20px;
+            color: #1a1a1a;
+        }
+        .verified {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .verified h2 {
+            color: #059669;
+            margin: 0 0 8px;
+        }
+        .details dt {
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        .details dd {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="verified">
+        <h2>{{ 'Certificate Verified'|t('diploma') }}</h2>
+        <p>{{ 'This certificate is authentic and valid.'|t('diploma') }}</p>
+    </div>
+
+    <dl class="details">
+        <dt>{{ 'Recipient'|t('diploma') }}</dt>
+        <dd>{{ certificate.metadata.userName ?? (user ? user.friendlyName : 'Unknown') }}</dd>
+
+        <dt>{{ 'Course'|t('diploma') }}</dt>
+        <dd>{{ certificate.metadata.courseTitle ?? (course ? course.title : 'Unknown') }}</dd>
+
+        <dt>{{ 'Issued'|t('diploma') }}</dt>
+        <dd>{{ certificate.issuedAt|date('F j, Y') }}</dd>
+
+        <dt>{{ 'Verification Code'|t('diploma') }}</dt>
+        <dd><code>{{ certificate.verificationCode }}</code></dd>
+    </dl>
+</body>
+</html>

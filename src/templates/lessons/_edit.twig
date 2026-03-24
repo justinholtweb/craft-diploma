@@ -1,0 +1,113 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set selectedSubnavItem = 'courses' %}
+{% set fullPageForm = true %}
+
+{% block pluginContent %}
+    <input type="hidden" name="action" value="diploma/lessons/save">
+    <input type="hidden" name="courseId" value="{{ course.id }}">
+    {{ redirectInput('diploma/courses/' ~ course.id) }}
+
+    {% if not isNew %}
+        <input type="hidden" name="lessonId" value="{{ lesson.id }}">
+    {% endif %}
+
+    <div class="buttons" style="margin-bottom: 16px;">
+        <a href="{{ url('diploma/courses/' ~ course.id) }}" class="btn">{{ '← Back to Course'|t('diploma') }}</a>
+    </div>
+
+    <div id="fields">
+        {{ forms.textField({
+            label: 'Title'|t('diploma'),
+            instructions: 'The name of the lesson.'|t('diploma'),
+            id: 'title',
+            name: 'title',
+            value: lesson.title,
+            errors: lesson.getErrors('title'),
+            required: true,
+            first: true,
+        }) }}
+
+        <hr>
+
+        <h2>{{ 'Lesson Settings'|t('diploma') }}</h2>
+
+        <div class="flex">
+            <div class="flex-grow">
+                {{ forms.selectField({
+                    label: 'Lesson Type'|t('diploma'),
+                    id: 'lessonType',
+                    name: 'lessonType',
+                    value: lesson.lessonType,
+                    options: typeOptions,
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: 'Estimated Duration (minutes)'|t('diploma'),
+                    id: 'estimatedDuration',
+                    name: 'estimatedDuration',
+                    value: lesson.estimatedDuration,
+                    type: 'number',
+                    min: 0,
+                }) }}
+            </div>
+        </div>
+
+        <div class="flex">
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: 'Sort Order'|t('diploma'),
+                    id: 'sortOrder',
+                    name: 'sortOrder',
+                    value: lesson.sortOrder,
+                    type: 'number',
+                    min: 0,
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.selectField({
+                    label: 'Prerequisite Lesson'|t('diploma'),
+                    instructions: 'Lesson that must be completed first.'|t('diploma'),
+                    id: 'prerequisiteLessonId',
+                    name: 'prerequisiteLessonId',
+                    value: lesson.prerequisiteLessonId,
+                    options: prerequisiteOptions,
+                }) }}
+            </div>
+        </div>
+
+        {{ forms.textField({
+            label: 'Drip Days'|t('diploma'),
+            instructions: 'Days after enrollment before this lesson unlocks. Pro feature.'|t('diploma'),
+            id: 'dripDays',
+            name: 'dripDays',
+            value: lesson.dripDays,
+            type: 'number',
+            min: 0,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Free Preview'|t('diploma'),
+            instructions: 'Allow unenrolled users to view this lesson.'|t('diploma'),
+            id: 'isFree',
+            name: 'isFree',
+            on: lesson.isFree,
+        }) }}
+    </div>
+
+    {% if not isNew %}
+        <hr>
+        <div class="meta read-only">
+            <div class="data">
+                <dt>{{ 'Course'|t('diploma') }}</dt>
+                <dd><a href="{{ url('diploma/courses/' ~ course.id) }}">{{ course.title }}</a></dd>
+            </div>
+            <div class="data">
+                <dt>{{ 'Created'|t('diploma') }}</dt>
+                <dd>{{ lesson.dateCreated|date('M j, Y g:ia') }}</dd>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

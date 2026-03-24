@@ -1,0 +1,15 @@
+{% extends 'diploma/_layouts/plugin' %}
+
+{% set title = 'Diploma Settings'|t('diploma') %}
+{% set selectedSubnavItem = 'settings' %}
+{% set fullPageForm = true %}
+
+{% block pluginContent %}
+    <input type="hidden" name="action" value="diploma/settings/save">
+    {{ redirectInput('diploma/settings') }}
+
+    {% include 'diploma/settings/_fields' with {
+        settings: settings,
+        plugin: plugin,
+    } only %}
+{% endblock %}
