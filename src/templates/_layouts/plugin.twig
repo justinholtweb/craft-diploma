@@ -1,5 +1,7 @@
 {% extends '_layouts/cp' %}
 
+{% do view.registerAssetBundle('justinholtweb\\diploma\\web\\assets\\cp\\CpAsset') %}
+
 {% set selectedSubnavItem = selectedSubnavItem ?? null %}
 
 {% block content %}

@@ -60,8 +60,8 @@ class DiplomaTwigExtension extends AbstractExtension
             return '—';
         }
 
-        $hours = (int) floor($seconds / 3600);
-        $minutes = (int) floor(($seconds % 3600) / 60);
+        $hours = (int)floor($seconds / 3600);
+        $minutes = (int)floor(($seconds % 3600) / 60);
         $secs = $seconds % 60;
 
         $parts = [];

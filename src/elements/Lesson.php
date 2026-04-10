@@ -66,7 +66,7 @@ class Lesson extends Element
         return new LessonQuery(static::class);
     }
 
-    public static function defineSources(string $context = null): array
+    public static function defineSources(?string $context = null): array
     {
         return [
             [
@@ -117,7 +117,7 @@ class Lesson extends Element
         ];
     }
 
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(?string $source = null): array
     {
         return [
             Delete::class,

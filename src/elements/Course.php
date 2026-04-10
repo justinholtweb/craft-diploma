@@ -82,7 +82,7 @@ class Course extends Element
         return new CourseQuery(static::class);
     }
 
-    public static function defineSources(string $context = null): array
+    public static function defineSources(?string $context = null): array
     {
         return [
             [
@@ -148,7 +148,7 @@ class Course extends Element
         ];
     }
 
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(?string $source = null): array
     {
         return [
             Delete::class,
@@ -178,7 +178,7 @@ class Course extends Element
 
     public function getLessons(): array
     {
-        return Lesson::find()->courseId($this->id)->orderBy('sortOrder asc')->all();
+        return Lesson::find()->courseId($this->id)->orderBy(['sortOrder' => SORT_ASC])->all();
     }
 
     public function getLessonCount(): int

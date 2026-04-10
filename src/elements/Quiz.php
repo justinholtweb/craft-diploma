@@ -68,7 +68,7 @@ class Quiz extends Element
         return new QuizQuery(static::class);
     }
 
-    public static function defineSources(string $context = null): array
+    public static function defineSources(?string $context = null): array
     {
         return [
             [
@@ -113,7 +113,7 @@ class Quiz extends Element
         ];
     }
 
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(?string $source = null): array
     {
         return [
             Delete::class,

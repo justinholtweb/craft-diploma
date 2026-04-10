@@ -17,7 +17,7 @@ class Lessons extends Component
     {
         return Lesson::find()
             ->courseId($courseId)
-            ->orderBy('sortOrder asc')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
     }
 
@@ -35,9 +35,9 @@ class Lessons extends Component
     {
         $maxOrder = (int)Lesson::find()
             ->courseId($courseId)
-            ->orderBy('sortOrder desc')
+            ->orderBy(['sortOrder' => SORT_DESC])
             ->limit(1)
-            ->select('diploma_lessons.sortOrder')
+            ->select(['[[diploma_lessons.sortOrder]]'])
             ->scalar();
 
         return $maxOrder + 1;
