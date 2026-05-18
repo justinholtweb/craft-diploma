@@ -97,3 +97,104 @@
     border-radius: 4px;
     transition: width 0.3s ease;
 }
+
+/* Question modal */
+.modal.diploma-question-modal {
+    width: 640px !important;
+    max-width: 90vw;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 85vh !important;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex !important;
+    flex-direction: column;
+}
+
+.modal.diploma-question-modal .header {
+    flex: 0 0 auto;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--hairline-color);
+    background: var(--gray-050, #f7f8f9);
+    border-top-left-radius: var(--large-border-radius);
+    border-top-right-radius: var(--large-border-radius);
+}
+
+.modal.diploma-question-modal .header h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.modal.diploma-question-modal .body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 20px 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.modal.diploma-question-modal .body > .field {
+    margin-bottom: 18px;
+}
+
+.modal.diploma-question-modal .body > h2 {
+    margin: 4px 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.modal.diploma-question-modal .body > p.light {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: var(--medium-text-color);
+}
+
+.modal.diploma-question-modal .body > hr {
+    margin: 20px 0 16px;
+    border: 0;
+    border-top: 1px solid var(--hairline-color);
+}
+
+.modal.diploma-question-modal .footer {
+    flex: 0 0 auto;
+    padding: 14px 24px;
+    border-top: 1px solid var(--hairline-color);
+    background: var(--gray-050, #f7f8f9);
+    border-bottom-left-radius: var(--large-border-radius);
+    border-bottom-right-radius: var(--large-border-radius);
+}
+
+.diploma-answer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.diploma-answer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid var(--hairline-color);
+    border-radius: var(--medium-border-radius);
+    background: var(--gray-050, #f7f8f9);
+}
+
+.diploma-answer-row input[type="text"] {
+    flex: 1 1 auto;
+}
+
+.diploma-answer-correct {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--medium-text-color);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.diploma-answer-correct input[type="checkbox"] {
+    margin: 0;
+}
