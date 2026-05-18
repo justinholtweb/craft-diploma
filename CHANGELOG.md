@@ -15,7 +15,7 @@
 
 ### Changed
 - Redesigned the question modal to use Craft's native form styling (proper field labels, select dropdown, fullwidth textareas, bordered answer rows) and Garnish's modal shell.
-- `Course`, `Lesson`, and `Quiz` now override `getSupportedSites()` to return all site IDs, declare `isLocalized()` as `true`, and treat the title as non-translatable so the same canonical title is shared across sites.
+- `Course`, `Lesson`, and `Quiz` now declare `isLocalized()` as `true` and override `getSupportedSites()` to return only the element's own site, so each element is pinned to the site it was created on. New elements pick up the active site from `Cp::requestedSite()` so creating one with `?site=X` writes it to that site.
 - Bumped `schemaVersion` to `1.0.1`. Run `php craft migrate/all` after upgrading.
 
 ## 5.0.1 - 2026-04-10
