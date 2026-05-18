@@ -50,7 +50,9 @@
 
         const formData = new FormData(quizForm);
 
-        fetch('/diploma/api/submit-quiz', {
+        const url = (window.DiplomaUrls && window.DiplomaUrls.submitQuiz) || '/diploma/api/submit-quiz';
+
+        fetch(url, {
             method: 'POST',
             headers: { 'Accept': 'application/json' },
             body: formData,

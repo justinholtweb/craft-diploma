@@ -3,6 +3,7 @@
 namespace justinholtweb\diploma\controllers;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\web\Controller;
 use justinholtweb\diploma\elements\Lesson;
 use justinholtweb\diploma\Plugin;
@@ -101,6 +102,7 @@ class LessonsController extends Controller
             }
         } else {
             $lesson = new Lesson();
+            $lesson->siteId = (Cp::requestedSite() ?? Craft::$app->getSites()->getCurrentSite())->id;
         }
 
         $lesson->courseId = $courseId;

@@ -4,7 +4,7 @@
 {% set selectedSubnavItem = 'courses' %}
 {% set elementType = elementType %}
 {% set canHaveDrafts = false %}
-{% set showSiteMenu = false %}
+{% set showSiteMenu = craft.app.isMultiSite %}
 {% set showStatusMenu = true %}
 
 {% block actionButton %}

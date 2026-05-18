@@ -20,7 +20,9 @@
             data.append('lessonId', lessonId);
             data.append(csrfName, csrfValue);
 
-            fetch('/diploma/api/complete-lesson', {
+            const url = (window.DiplomaUrls && window.DiplomaUrls.completeLesson) || '/diploma/api/complete-lesson';
+
+            fetch(url, {
                 method: 'POST',
                 headers: { 'Accept': 'application/json' },
                 body: data,

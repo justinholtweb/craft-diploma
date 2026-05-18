@@ -157,7 +157,7 @@
         if (questionId) formData.append('questionId', questionId);
         formData.append(Craft.csrfTokenName, Craft.csrfTokenValue);
 
-        fetch(Craft.actionUrl + '/diploma/questions/save', {
+        fetch(Craft.getActionUrl('diploma/questions/save'), {
             method: 'POST',
             headers: { 'Accept': 'application/json' },
             body: formData,

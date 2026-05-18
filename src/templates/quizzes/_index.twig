@@ -4,7 +4,7 @@
 {% set selectedSubnavItem = 'quizzes' %}
 {% set elementType = elementType %}
 {% set canHaveDrafts = false %}
-{% set showSiteMenu = false %}
+{% set showSiteMenu = craft.app.isMultiSite %}
 {% set showStatusMenu = false %}
 
 {% block actionButton %}

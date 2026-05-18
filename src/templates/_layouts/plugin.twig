@@ -3,6 +3,24 @@
 {% do view.registerAssetBundle('justinholtweb\\diploma\\web\\assets\\cp\\CpAsset') %}
 
 {% set selectedSubnavItem = selectedSubnavItem ?? null %}
+{% set crumbs = crumbs ?? [] %}
+
+{% if craft.app.getIsMultiSite() %}
+    {% set requestedSiteHandle = craft.app.request.getQueryParam('site') %}
+    {% set currentSite = craft.app.sites.currentSite %}
+    {% if requestedSiteHandle %}
+        {% set bySiteHandle = craft.app.sites.getSiteByHandle(requestedSiteHandle) %}
+        {% if bySiteHandle %}
+            {% set currentSite = bySiteHandle %}
+        {% endif %}
+    {% endif %}
+    {% set crumbs = crumbs|merge([{
+        id: 'site-crumb',
+        icon: 'world',
+        label: currentSite.name|t('site'),
+        menu: { label: 'Select site'|t('app'), items: siteMenuItems(null, currentSite, { includeOmittedSites: true }) },
+    }]) %}
+{% endif %}
 
 {% block content %}
     {% block pluginContent %}{% endblock %}

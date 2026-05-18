@@ -68,6 +68,16 @@ class Quiz extends Element
         return new QuizQuery(static::class);
     }
 
+    public static function isLocalized(): bool
+    {
+        return true;
+    }
+
+    public function getSupportedSites(): array
+    {
+        return [$this->siteId ?? Craft::$app->getSites()->getCurrentSite()->id];
+    }
+
     public static function defineSources(?string $context = null): array
     {
         return [

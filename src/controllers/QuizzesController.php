@@ -3,6 +3,7 @@
 namespace justinholtweb\diploma\controllers;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\web\Controller;
 use justinholtweb\diploma\elements\Course;
 use justinholtweb\diploma\elements\Quiz;
@@ -79,6 +80,7 @@ class QuizzesController extends Controller
             }
         } else {
             $quiz = new Quiz();
+            $quiz->siteId = (Cp::requestedSite() ?? Craft::$app->getSites()->getCurrentSite())->id;
         }
 
         $quiz->title = $request->getBodyParam('title');
