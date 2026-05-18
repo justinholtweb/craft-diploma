@@ -30,8 +30,8 @@
         "handle": "diploma",
         "name": "Diploma",
         "developer": "Justin Holt",
-        "developerUrl": "https://github.com/justinholtweb",
-        "documentationUrl": "https://github.com/justinholtweb/craft-diploma",
+        "developerUrl": "https://justinholt.com",
+        "documentationUrl": "https://craft-diploma.com",
         "description": "LMS plugin for Craft CMS — courses, quizzes, progress tracking, and certificates.",
         "class": "justinholtweb\\diploma\\Plugin"
     }
