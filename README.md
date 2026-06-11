@@ -40,7 +40,9 @@ All settings are available in the control panel under **Diploma > Settings**, or
 
 return [
     'enableCertificates' => true,
-    'certificateTemplatePath' => '',
+    'enableCourseUrls' => false,
+    'courseUriFormat' => 'courses/{slug}',
+    'courseTemplate' => '',
     'autoEnrollOnPurchase' => true,
     'autoIssueCertificate' => true,
     'requirePassingQuiz' => false,
@@ -142,6 +144,28 @@ When a user completes a course (and passes any required quizzes), a certificate 
 {{ progress.totalTimeSpent|diplomaTimeSpent }}
 ```
 
+### Course URLs
+
+By default, courses have **no front-end URLs** — you query them with `craft.diploma.courses()` and render them in whatever templates you build.
+
+To give published courses their own URLs, enable **Course URLs** under **Diploma > Settings** (or set `enableCourseUrls` in `config/diploma.php`):
+
+- **Course URI Format** — the URI pattern, e.g. `courses/{slug}`
+- **Course Template** — the template Craft renders for a course; it receives a `course` variable
+
+Once enabled, each published course resolves to its own URL and `course.url` is available:
+
+```twig
+{% set courses = craft.diploma.courses().status('published').all() %}
+<ul>
+    {% for course in courses %}
+        <li><a href="{{ course.url }}">{{ course.title }}</a></li>
+    {% endfor %}
+</ul>
+```
+
+> Courses saved before enabling this setting won't have a URI until they're re-saved. Open and save each one from the control panel — Craft generates the slug (from the title, if blank) and URI on save.
+
 ### Front-end Forms
 
 **Self-enrollment:**
@@ -150,7 +174,7 @@ When a user completes a course (and passes any required quizzes), a certificate 
 <form method="post">
     {{ csrfInput() }}
     {{ actionInput('diploma/progress/enroll') }}
-    {{ redirectInput('/courses/' ~ course.slug) }}
+    {{ redirectInput(course.url ?? '/courses/' ~ course.slug) }}
     <input type="hidden" name="courseId" value="{{ course.id }}">
     <button type="submit">Enroll Now</button>
 </form>
@@ -173,7 +197,7 @@ When a user completes a course (and passes any required quizzes), a certificate 
 <form method="post">
     {{ csrfInput() }}
     {{ actionInput('diploma/quiz-taking/submit') }}
-    {{ redirectInput('/courses/' ~ course.slug ~ '/quiz-results') }}
+    {{ redirectInput((course.url ?? '/courses/' ~ course.slug) ~ '/quiz-results') }}
     <input type="hidden" name="quizId" value="{{ quiz.id }}">
 
     {% for question in quiz.getQuestions() %}

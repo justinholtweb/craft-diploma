@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.0.4 - 2026-06-11
+
+### Added
+- Optional front-end URLs for courses. Enable **Course URLs** under **Diploma > Settings** (or set `enableCourseUrls`, `courseUriFormat`, and `courseTemplate` in `config/diploma.php`) to give published courses their own routable URLs and a `course.url`. A slug field appears on the course edit screen when enabled. Courses saved before enabling it need to be re-saved from the control panel to generate their slug and URI.
+
+### Fixed
+- Front-end template tags (`craft.diploma.*`) and the `diploma*` Twig filters could silently fail to register. The `CraftVariable::EVENT_INIT` listener and the Twig extension were being registered inside the deferred `Craft::$app->onInit()` callback, which can run after the `craft` template variable has already initialized. They're now registered directly in `Plugin::init()` so the variable and filters are always available in front-end templates.
+
 ## 5.0.3 - 2026-05-18
 
 ### Added

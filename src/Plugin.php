@@ -92,14 +92,20 @@ class Plugin extends BasePlugin
     {
         parent::init();
 
+        // The template variable and Twig extension must be registered directly in
+        // init(), not deferred via onInit(). CraftVariable::EVENT_INIT fires once when
+        // the `craft` template variable is first initialized, which can happen before
+        // onInit() callbacks run — deferring the listener means it can miss the event,
+        // leaving `craft.diploma` unset and every front-end tag/filter broken.
+        $this->registerTemplateVariable();
+        $this->registerTwigExtension();
+
         Craft::$app->onInit(function () {
             $this->registerElementTypes();
             $this->registerCpRoutes();
             $this->registerSiteRoutes();
             $this->registerPermissions();
-            $this->registerTemplateVariable();
             $this->registerWidgets();
-            $this->registerTwigExtension();
         });
     }
 

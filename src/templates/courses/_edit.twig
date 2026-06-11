@@ -24,6 +24,21 @@
             first: true,
         }) }}
 
+        {% if courseUrlsEnabled %}
+            {{ forms.textField({
+                label: 'Slug'|t('diploma'),
+                instructions: 'Used to build the course URL. Leave blank to generate from the title.'|t('diploma'),
+                id: 'slug',
+                name: 'slug',
+                value: course.slug,
+                errors: course.getErrors('slug'),
+            }) }}
+
+            {% if not isNew and course.url %}
+                <p><a href="{{ course.url }}" rel="noopener" target="_blank">{{ course.url }}</a></p>
+            {% endif %}
+        {% endif %}
+
         <hr>
 
         <h2>{{ 'Course Settings'|t('diploma') }}</h2>

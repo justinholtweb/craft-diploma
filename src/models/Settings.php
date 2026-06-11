@@ -7,6 +7,9 @@ use craft\base\Model;
 class Settings extends Model
 {
     public bool $enableCertificates = true;
+    public bool $enableCourseUrls = false;
+    public string $courseUriFormat = 'courses/{slug}';
+    public string $courseTemplate = '';
     public string $certificateTemplatePath = '';
     public bool $autoEnrollOnPurchase = true;
     public bool $autoIssueCertificate = true;
@@ -20,9 +23,10 @@ class Settings extends Model
     public function defineRules(): array
     {
         return [
-            [['enableCertificates', 'autoEnrollOnPurchase', 'autoIssueCertificate', 'requirePassingQuiz'], 'boolean'],
+            [['enableCertificates', 'enableCourseUrls', 'autoEnrollOnPurchase', 'autoIssueCertificate', 'requirePassingQuiz'], 'boolean'],
             [['defaultPassingScore'], 'integer', 'min' => 0, 'max' => 100],
-            [['certificateTemplatePath', 'certificateTitle', 'certificateBody'], 'string'],
+            [['certificateTemplatePath', 'certificateTitle', 'certificateBody', 'courseUriFormat', 'courseTemplate'], 'string'],
+            [['courseUriFormat', 'courseTemplate'], 'required', 'when' => fn(Settings $model) => $model->enableCourseUrls],
         ];
     }
 }

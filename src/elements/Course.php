@@ -10,6 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
 use justinholtweb\diploma\elements\db\CourseQuery;
 use justinholtweb\diploma\enums\CourseStatus;
+use justinholtweb\diploma\Plugin;
 use justinholtweb\diploma\records\CourseRecord;
 use yii\base\InvalidConfigException;
 
@@ -60,7 +61,41 @@ class Course extends Element
 
     public static function hasUris(): bool
     {
-        return false;
+        return Plugin::getInstance()->getSettings()->enableCourseUrls;
+    }
+
+    public function getUriFormat(): ?string
+    {
+        $settings = Plugin::getInstance()->getSettings();
+
+        if (!$settings->enableCourseUrls) {
+            return null;
+        }
+
+        return $settings->courseUriFormat ?: null;
+    }
+
+    protected function route(): array|string|null
+    {
+        // Only published courses resolve to a front-end page.
+        if ($this->courseStatus !== 'published') {
+            return null;
+        }
+
+        $settings = Plugin::getInstance()->getSettings();
+
+        if (!$settings->enableCourseUrls || !$settings->courseTemplate) {
+            return null;
+        }
+
+        return [
+            'templates/render', [
+                'template' => $settings->courseTemplate,
+                'variables' => [
+                    'course' => $this,
+                ],
+            ],
+        ];
     }
 
     public static function hasStatuses(): bool

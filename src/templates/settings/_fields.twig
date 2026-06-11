@@ -40,6 +40,41 @@
 
     <hr>
 
+    <h2>{{ 'Course URLs'|t('diploma') }}</h2>
+
+    {{ forms.lightswitchField({
+        label: 'Enable Course URLs'|t('diploma'),
+        instructions: 'Give published courses their own front-end URLs, routed to a template.'|t('diploma'),
+        id: 'enableCourseUrls',
+        name: 'settings[enableCourseUrls]',
+        on: settings.enableCourseUrls,
+        toggle: 'course-url-fields',
+    }) }}
+
+    <div id="course-url-fields" class="{{ not settings.enableCourseUrls ? 'hidden' }}">
+        {{ forms.textField({
+            label: 'Course URI Format'|t('diploma'),
+            instructions: 'The URI pattern for courses, e.g. `courses/{slug}`.'|t('diploma'),
+            id: 'courseUriFormat',
+            name: 'settings[courseUriFormat]',
+            value: settings.courseUriFormat,
+            errors: settings.getErrors('courseUriFormat'),
+            code: true,
+        }) }}
+
+        {{ forms.textField({
+            label: 'Course Template'|t('diploma'),
+            instructions: 'The template that renders a course page. It receives a `course` variable.'|t('diploma'),
+            id: 'courseTemplate',
+            name: 'settings[courseTemplate]',
+            value: settings.courseTemplate,
+            errors: settings.getErrors('courseTemplate'),
+            code: true,
+        }) }}
+    </div>
+
+    <hr>
+
     <h2>{{ 'Integration Settings'|t('diploma') }}</h2>
 
     <p>

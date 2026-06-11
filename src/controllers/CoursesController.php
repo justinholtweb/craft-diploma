@@ -4,6 +4,7 @@ namespace justinholtweb\diploma\controllers;
 
 use Craft;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use justinholtweb\diploma\elements\Course;
 use justinholtweb\diploma\Plugin;
@@ -66,6 +67,7 @@ class CoursesController extends Controller
             'difficultyOptions' => $difficultyOptions,
             'statusOptions' => $statusOptions,
             'lessons' => $lessons,
+            'courseUrlsEnabled' => Course::hasUris(),
             'title' => $isNew ? Craft::t('diploma', 'New Course') : $course->title,
         ]);
     }
@@ -89,6 +91,15 @@ class CoursesController extends Controller
         }
 
         $course->title = $request->getBodyParam('title');
+
+        // Slugs are only meaningful when course URLs are enabled. Use the posted
+        // slug if provided, otherwise derive one from the title so the course has
+        // a stable URI segment.
+        if (Course::hasUris()) {
+            $slug = $request->getBodyParam('slug') ?: $course->slug ?: $course->title;
+            $course->slug = $slug ? ElementHelper::normalizeSlug($slug) : null;
+        }
+
         $course->courseStatus = $request->getBodyParam('courseStatus', 'draft');
         $course->difficultyLevel = $request->getBodyParam('difficultyLevel') ?: null;
         $course->estimatedDuration = $request->getBodyParam('estimatedDuration') ?: null;
