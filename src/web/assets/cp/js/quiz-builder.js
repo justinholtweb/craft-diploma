@@ -12,6 +12,7 @@
 
     const questionTypes = [
         { value: 'multipleChoice', label: 'Multiple Choice' },
+        { value: 'multipleResponse', label: 'Multiple Response (select all)' },
         { value: 'trueFalse', label: 'True/False' },
         { value: 'shortAnswer', label: 'Short Answer' },
         { value: 'matching', label: 'Matching' },

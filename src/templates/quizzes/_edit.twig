@@ -102,6 +102,14 @@
 
         <h2>{{ 'Questions'|t('diploma') }} ({{ questions|length }})</h2>
 
+        {% set questionTypeLabels = {
+            multipleChoice: 'Multiple Choice'|t('diploma'),
+            multipleResponse: 'Multiple Response'|t('diploma'),
+            trueFalse: 'True/False'|t('diploma'),
+            shortAnswer: 'Short Answer'|t('diploma'),
+            matching: 'Matching'|t('diploma'),
+        } %}
+
         <div id="quiz-builder" data-quiz-id="{{ quiz.id }}">
             {% if questions|length %}
                 <div class="diploma-question-list" id="question-list">
@@ -109,7 +117,7 @@
                         <div class="question-item" data-id="{{ question.id }}">
                             <div class="question-header">
                                 <strong>{{ loop.index }}. {{ question.questionText|truncate(80) }}</strong>
-                                <span class="light">{{ question.questionType }} · {{ question.points }} pt{{ question.points != 1 ? 's' : '' }}</span>
+                                <span class="light">{{ questionTypeLabels[question.questionType] ?? question.questionType }} · {{ question.points }} pt{{ question.points != 1 ? 's' : '' }}</span>
                             </div>
                             {% if question.answers|length %}
                                 <ul style="margin: 4px 0 0 20px;">

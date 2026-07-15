@@ -4,6 +4,7 @@ namespace justinholtweb\diploma\controllers;
 
 use Craft;
 use craft\web\Controller;
+use justinholtweb\diploma\elements\Lesson;
 use justinholtweb\diploma\models\Edition;
 use justinholtweb\diploma\Plugin;
 use yii\web\Response;
@@ -52,6 +53,34 @@ class SettingsController extends Controller
         return $this->renderTemplate('diploma/settings/_headcount', [
             'settings' => Plugin::getInstance()->getSettings(),
         ]);
+    }
+
+    public function actionLessonFields(): Response
+    {
+        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Lesson::class);
+
+        return $this->renderTemplate('diploma/settings/_lesson-fields', [
+            'fieldLayout' => $fieldLayout,
+        ]);
+    }
+
+    public function actionSaveLessonFieldLayout(): ?Response
+    {
+        $this->requirePostRequest();
+
+        $fieldsService = Craft::$app->getFields();
+        $fieldLayout = $fieldsService->assembleLayoutFromPost();
+        $fieldLayout->type = Lesson::class;
+
+        if (!$fieldsService->saveLayout($fieldLayout)) {
+            Craft::$app->getSession()->setError(Craft::t('diploma', 'Couldn\'t save lesson fields.'));
+            Craft::$app->getUrlManager()->setRouteParams(['fieldLayout' => $fieldLayout]);
+            return null;
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('diploma', 'Lesson fields saved.'));
+
+        return $this->redirectToPostedUrl();
     }
 
     public function actionSave(): ?Response

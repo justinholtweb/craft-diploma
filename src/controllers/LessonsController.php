@@ -114,6 +114,9 @@ class LessonsController extends Controller
         $lesson->dripDays = $request->getBodyParam('dripDays') ?: null;
         $lesson->isFree = (bool)$request->getBodyParam('isFree');
 
+        // Custom content fields from the lesson field layout
+        $lesson->setFieldValuesFromRequest('fields');
+
         if (!Craft::$app->getElements()->saveElement($lesson)) {
             Craft::$app->getSession()->setError(Craft::t('diploma', 'Couldn\'t save lesson.'));
             Craft::$app->getUrlManager()->setRouteParams(['lesson' => $lesson]);

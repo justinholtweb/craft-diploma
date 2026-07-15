@@ -18,6 +18,7 @@ class Install extends Migration
     public function safeDown(): bool
     {
         // Drop in reverse dependency order
+        $this->dropTableIfExists('{{%diploma_activity_log}}');
         $this->dropTableIfExists('{{%diploma_drip_schedules}}');
         $this->dropTableIfExists('{{%diploma_certificates}}');
         $this->dropTableIfExists('{{%diploma_quiz_responses}}');
@@ -194,6 +195,25 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+
+        // Activity Log (append-only audit trail, standalone)
+        $this->createTable('{{%diploma_activity_log}}', [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->null(),
+            'actorId' => $this->integer()->null(),
+            'eventType' => $this->string(50)->notNull(),
+            'courseId' => $this->integer()->null(),
+            'lessonId' => $this->integer()->null(),
+            'quizId' => $this->integer()->null(),
+            'enrollmentId' => $this->integer()->null(),
+            'score' => $this->decimal(5, 2)->null(),
+            'passed' => $this->boolean()->null(),
+            'message' => $this->string(255)->null(),
+            'data' => $this->json()->null(),
+            'ipAddress' => $this->string(45)->null(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
     }
 
     private function createIndexes(): void
@@ -244,6 +264,13 @@ class Install extends Migration
         // Drip Schedules
         $this->createIndex(null, '{{%diploma_drip_schedules}}', ['courseId']);
         $this->createIndex(null, '{{%diploma_drip_schedules}}', ['lessonId']);
+
+        // Activity Log
+        $this->createIndex(null, '{{%diploma_activity_log}}', ['eventType']);
+        $this->createIndex(null, '{{%diploma_activity_log}}', ['userId']);
+        $this->createIndex(null, '{{%diploma_activity_log}}', ['courseId']);
+        $this->createIndex(null, '{{%diploma_activity_log}}', ['enrollmentId']);
+        $this->createIndex(null, '{{%diploma_activity_log}}', ['dateCreated']);
     }
 
     private function addForeignKeys(): void
@@ -293,5 +320,12 @@ class Install extends Migration
         // Drip Schedules → courses, lessons
         $this->addForeignKey(null, '{{%diploma_drip_schedules}}', ['courseId'], '{{%diploma_courses}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%diploma_drip_schedules}}', ['lessonId'], '{{%diploma_lessons}}', ['id'], 'CASCADE', null);
+
+        // Activity Log → users, courses (SET NULL, so audit rows survive deletions).
+        // enrollmentId/lessonId/quizId are intentionally left without foreign keys
+        // to keep the audit trail intact when those records are removed.
+        $this->addForeignKey(null, '{{%diploma_activity_log}}', ['userId'], '{{%users}}', ['id'], 'SET NULL', null);
+        $this->addForeignKey(null, '{{%diploma_activity_log}}', ['actorId'], '{{%users}}', ['id'], 'SET NULL', null);
+        $this->addForeignKey(null, '{{%diploma_activity_log}}', ['courseId'], '{{%diploma_courses}}', ['id'], 'SET NULL', null);
     }
 }

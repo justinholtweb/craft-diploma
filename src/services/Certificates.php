@@ -6,12 +6,18 @@ use Craft;
 use craft\base\Component;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use justinholtweb\diploma\events\CertificateEvent;
 use justinholtweb\diploma\models\Certificate;
 use justinholtweb\diploma\Plugin;
 use justinholtweb\diploma\records\CertificateRecord;
 
 class Certificates extends Component
 {
+    /**
+     * @event CertificateEvent Fired after a certificate is issued.
+     */
+    public const EVENT_AFTER_ISSUE_CERTIFICATE = 'afterIssueCertificate';
+
     public function issue(int $enrollmentId, int $userId, int $courseId): ?Certificate
     {
         // Check for existing certificate
@@ -46,7 +52,15 @@ class Certificates extends Component
             return null;
         }
 
-        return $this->recordToModel($record);
+        $certificate = $this->recordToModel($record);
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ISSUE_CERTIFICATE)) {
+            $this->trigger(self::EVENT_AFTER_ISSUE_CERTIFICATE, new CertificateEvent([
+                'certificate' => $certificate,
+            ]));
+        }
+
+        return $certificate;
     }
 
     public function getCertificate(int $courseId, int $userId): ?Certificate

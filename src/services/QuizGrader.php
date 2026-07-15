@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Component;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use justinholtweb\diploma\events\QuizAttemptEvent;
 use justinholtweb\diploma\models\QuizAttempt;
 use justinholtweb\diploma\models\QuizResponse;
 use justinholtweb\diploma\Plugin;
@@ -15,6 +16,12 @@ use justinholtweb\diploma\records\QuizResponseRecord;
 
 class QuizGrader extends Component
 {
+    /**
+     * @event QuizAttemptEvent Fired after a quiz attempt has been graded.
+     * Check `$event->attempt->passed` to react to a pass specifically.
+     */
+    public const EVENT_AFTER_GRADE_ATTEMPT = 'afterGradeAttempt';
+
     public function startAttempt(int $quizId, int $enrollmentId, int $userId): ?QuizAttempt
     {
         $quiz = Plugin::getInstance()->quizzes->getById($quizId);
@@ -101,6 +108,13 @@ class QuizGrader extends Component
                     $isCorrect = $answer && (bool)$answer->isCorrect;
                     break;
 
+                case 'multipleResponse':
+                    // "Select all that apply": the learner submits a set of
+                    // answer IDs. All correct answers must be chosen, and no
+                    // incorrect ones — full marks only for an exact match.
+                    $isCorrect = $this->gradeMultipleResponse($questionId, $responseData, $responseRecord);
+                    break;
+
                 case 'shortAnswer':
                     $responseRecord->responseText = $responseData['text'] ?? '';
                     // Short answers need manual grading by default,
@@ -165,6 +179,12 @@ class QuizGrader extends Component
         $attempt->completedAt = $record->completedAt;
         $attempt->timeSpent = $record->timeSpent;
 
+        if ($this->hasEventHandlers(self::EVENT_AFTER_GRADE_ATTEMPT)) {
+            $this->trigger(self::EVENT_AFTER_GRADE_ATTEMPT, new QuizAttemptEvent([
+                'attempt' => $attempt,
+            ]));
+        }
+
         return $attempt;
     }
 
@@ -198,6 +218,34 @@ class QuizGrader extends Component
             ->where(['quizId' => $quizId, 'userId' => $userId])
             ->andWhere(['not', ['completedAt' => null]])
             ->max('score');
+    }
+
+    /**
+     * Grades a "select all that apply" question. Full marks are awarded only
+     * when the submitted answer set exactly equals the set of correct answers
+     * (every correct answer chosen, no incorrect answer chosen).
+     *
+     * The submitted answer IDs are stored as a JSON array in `responseText`
+     * so the individual selections are preserved for review.
+     */
+    private function gradeMultipleResponse(int $questionId, mixed $responseData, QuizResponseRecord $responseRecord): bool
+    {
+        $submitted = is_array($responseData)
+            ? ($responseData['answerIds'] ?? $responseData['answerId'] ?? [])
+            : [];
+        $submittedIds = array_values(array_unique(array_map('intval', (array)$submitted)));
+        sort($submittedIds);
+
+        $responseRecord->responseText = json_encode($submittedIds);
+
+        $correctIds = array_map('intval', AnswerRecord::find()
+            ->select(['id'])
+            ->where(['questionId' => $questionId, 'isCorrect' => true])
+            ->column());
+        sort($correctIds);
+
+        // A question with no correct answers can never be answered correctly.
+        return !empty($correctIds) && $submittedIds === $correctIds;
     }
 
     private function gradeMatching($question, array $pairs): bool

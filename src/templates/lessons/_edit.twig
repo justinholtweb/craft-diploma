@@ -29,6 +29,13 @@
             first: true,
         }) }}
 
+        {% set lessonFieldLayout = lesson.getFieldLayout() %}
+        {% if lessonFieldLayout and lessonFieldLayout.getTabs()|length %}
+            <hr>
+            <h2>{{ 'Lesson Content'|t('diploma') }}</h2>
+            {{ lessonFieldLayout.createForm(lesson).render()|raw }}
+        {% endif %}
+
         <hr>
 
         <h2>{{ 'Lesson Settings'|t('diploma') }}</h2>

@@ -2,6 +2,7 @@
     "name": "justinholtweb/craft-diploma",
     "description": "LMS plugin for Craft CMS 5. Create courses, lessons, quizzes, track progress, and issue certificates.",
     "type": "craft-plugin",
+    "version": "5.1.0",
     "license": "proprietary",
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -15,7 +16,8 @@
         "craftcms/phpstan": "dev-main"
     },
     "suggest": {
-        "dompdf/dompdf": "Required for PDF certificate generation (Pro edition)"
+        "dompdf/dompdf": "Required for PDF certificate generation (Pro edition)",
+        "craftcms/ckeditor": "Adds a rich-text field for building lesson content field layouts"
     },
     "autoload": {
         "psr-4": {

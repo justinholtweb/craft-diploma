@@ -6,12 +6,24 @@ use Craft;
 use craft\base\Component;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use justinholtweb\diploma\events\EnrollmentEvent;
 use justinholtweb\diploma\models\Enrollment;
 use justinholtweb\diploma\Plugin;
 use justinholtweb\diploma\records\EnrollmentRecord;
 
 class Enrollments extends Component
 {
+    /**
+     * @event EnrollmentEvent Fired after a user is enrolled in a course.
+     */
+    public const EVENT_AFTER_ENROLL = 'afterEnroll';
+
+    /**
+     * @event EnrollmentEvent Fired after an enrollment is marked completed
+     * (i.e. the user finished the course).
+     */
+    public const EVENT_AFTER_COMPLETE_COURSE = 'afterCompleteCourse';
+
     public function getEnrollment(int $courseId, int $userId): ?Enrollment
     {
         $record = EnrollmentRecord::find()
@@ -87,7 +99,15 @@ class Enrollments extends Component
         // Increment course enrollment count
         Plugin::getInstance()->courses->incrementEnrollmentCount($courseId);
 
-        return $this->recordToModel($record);
+        $enrollment = $this->recordToModel($record);
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ENROLL)) {
+            $this->trigger(self::EVENT_AFTER_ENROLL, new EnrollmentEvent([
+                'enrollment' => $enrollment,
+            ]));
+        }
+
+        return $enrollment;
     }
 
     public function unenroll(int $courseId, int $userId): bool
@@ -115,10 +135,22 @@ class Enrollments extends Component
             return false;
         }
 
+        $alreadyCompleted = $record->enrollmentStatus === 'completed';
+
         $record->enrollmentStatus = 'completed';
         $record->completedAt = Db::prepareDateForDb(new \DateTime());
 
-        return $record->save(false);
+        if (!$record->save(false)) {
+            return false;
+        }
+
+        if (!$alreadyCompleted && $this->hasEventHandlers(self::EVENT_AFTER_COMPLETE_COURSE)) {
+            $this->trigger(self::EVENT_AFTER_COMPLETE_COURSE, new EnrollmentEvent([
+                'enrollment' => $this->recordToModel($record),
+            ]));
+        }
+
+        return true;
     }
 
     public function updateStatus(int $enrollmentId, string $status): bool

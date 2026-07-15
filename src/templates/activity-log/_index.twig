@@ -1,0 +1,86 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Activity Log'|t('diploma') %}
+{% set selectedSubnavItem = 'activity' %}
+
+{% block pluginContent %}
+    <div class="flex" style="margin-bottom: 16px; align-items: flex-end;">
+        <form method="get" action="{{ url('diploma/activity') }}" class="flex" style="align-items: flex-end; gap: 8px;">
+            {{ forms.selectField({
+                label: 'Event'|t('diploma'),
+                name: 'eventType',
+                value: selectedType,
+                options: typeOptions,
+            }) }}
+            <div class="field">
+                <button type="submit" class="btn">{{ 'Filter'|t('diploma') }}</button>
+            </div>
+        </form>
+
+        <div class="flex-grow"></div>
+
+        <div class="field">
+            <a class="btn icon download" href="{{ url('diploma/activity-log/export', selectedType ? { eventType: selectedType } : {}) }}">
+                {{ 'Export CSV'|t('diploma') }}
+            </a>
+        </div>
+    </div>
+
+    {% if entries|length %}
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    <th>{{ 'When'|t('diploma') }}</th>
+                    <th>{{ 'Event'|t('diploma') }}</th>
+                    <th>{{ 'User'|t('diploma') }}</th>
+                    <th>{{ 'Detail'|t('diploma') }}</th>
+                    <th>{{ 'IP'|t('diploma') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                    {% set meta = typeMeta[entry.eventType] ?? { label: entry.eventType, color: 'gray' } %}
+                    <tr>
+                        <td data-title="{{ 'When'|t('diploma') }}">
+                            {{ entry.dateCreated ? entry.dateCreated|date('M j, Y g:ia') : '—' }}
+                        </td>
+                        <td data-title="{{ 'Event'|t('diploma') }}">
+                            <span class="status {{ meta.color }}"></span>{{ meta.label }}
+                        </td>
+                        <td data-title="{{ 'User'|t('diploma') }}">
+                            {% set userName = entry.data.userName ?? null %}
+                            {% if entry.userId %}
+                                <a href="{{ cpUrl('users/' ~ entry.userId) }}">{{ userName ?: ('User #' ~ entry.userId) }}</a>
+                            {% else %}
+                                {{ userName ?: '—' }}
+                            {% endif %}
+                        </td>
+                        <td data-title="{{ 'Detail'|t('diploma') }}">
+                            {{ entry.message ?: '—' }}
+                            {% if entry.score is not null %}
+                                <span class="light">({{ entry.score }}%)</span>
+                            {% endif %}
+                        </td>
+                        <td data-title="{{ 'IP'|t('diploma') }}" class="light">{{ entry.ipAddress ?: '—' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if totalPages > 1 %}
+            <div class="flex" style="margin-top: 14px; align-items: center;">
+                {% set baseParams = selectedType ? { eventType: selectedType } : {} %}
+                {% if page > 1 %}
+                    <a class="btn" href="{{ url('diploma/activity', baseParams|merge({ page: page - 1 })) }}">{{ '← Previous'|t('diploma') }}</a>
+                {% endif %}
+                <div class="light">{{ 'Page {page} of {total}'|t('diploma', { page: page, total: totalPages }) }}</div>
+                {% if page < totalPages %}
+                    <a class="btn" href="{{ url('diploma/activity', baseParams|merge({ page: page + 1 })) }}">{{ 'Next →'|t('diploma') }}</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <p class="zilch">{{ 'No activity recorded yet.'|t('diploma') }}</p>
+    {% endif %}
+{% endblock %}

@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.1.0 - 2026-07-15
+
+### Added
+- **Lesson content field layout.** Lessons now have a proper Craft field layout, designed under **Diploma → Settings → Lesson Content Fields**. Add rich text/CKEditor, Assets (embedded PDFs, video, images), Matrix, link fields — anything Craft supports — so a single lesson can hold mixed rich content. The fields render on every lesson's edit screen and are available on the lesson element in your templates.
+- **"Select all that apply" question type.** A new **Multiple Response** question type extends multiple choice to allow more than one correct answer. It's graded all-or-nothing: full marks only when every correct option is selected and no incorrect ones. Mark multiple answers correct in the quiz builder as usual; on the front end, render the options as checkboxes named `responses[<questionId>][answerIds][]`.
+- **Plugin events.** Diploma now fires its own events so integrations can react to learner activity: `Enrollments::EVENT_AFTER_ENROLL`, `Enrollments::EVENT_AFTER_COMPLETE_COURSE`, `ProgressTracker::EVENT_AFTER_COMPLETE_LESSON`, `QuizGrader::EVENT_AFTER_GRADE_ATTEMPT` (check `$event->attempt->passed` for a pass), and `Certificates::EVENT_AFTER_ISSUE_CERTIFICATE`. Event classes live in the `justinholtweb\diploma\events` namespace.
+- **Activity / audit log.** An append-only audit trail of enrollments, lesson completions, quiz pass/fail (with score), course completions, and certificate issuance — recording who, when, and from which IP address. View and filter it under **Diploma → Activity Log**, export it as CSV for compliance and record-keeping, or read a user's history in templates with `craft.diploma.getUserActivity(user)`. Entries keep a denormalised snapshot and use nullable references, so the audit trail survives deletion of the related course, user, or enrollment. Available in both editions.
+- New permission: **View activity log**.
+
+### Changed
+- Bumped `schemaVersion` to `1.1.0`. Run `php craft migrate/all` after upgrading to create the `diploma_activity_log` table.
+
 ## 5.0.4 - 2026-06-11
 
 ### Added

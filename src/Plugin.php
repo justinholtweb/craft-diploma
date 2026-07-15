@@ -17,7 +17,12 @@ use craft\web\UrlManager;
 use justinholtweb\diploma\elements\Course;
 use justinholtweb\diploma\elements\Lesson;
 use justinholtweb\diploma\elements\Quiz;
+use justinholtweb\diploma\events\CertificateEvent;
+use justinholtweb\diploma\events\EnrollmentEvent;
+use justinholtweb\diploma\events\LessonCompletionEvent;
+use justinholtweb\diploma\events\QuizAttemptEvent;
 use justinholtweb\diploma\models\Settings;
+use justinholtweb\diploma\services\ActivityLog;
 use justinholtweb\diploma\services\Certificates;
 use justinholtweb\diploma\services\CommerceIntegration;
 use justinholtweb\diploma\services\Courses;
@@ -49,6 +54,7 @@ use yii\base\Event;
  * @property CommerceIntegration $commerceIntegration
  * @property HeadcountIntegration $headcountIntegration
  * @property Reporting $reporting
+ * @property ActivityLog $activityLog
  * @property Settings $settings
  * @method Settings getSettings()
  */
@@ -57,7 +63,7 @@ class Plugin extends BasePlugin
     public const EDITION_LITE = 'lite';
     public const EDITION_PRO = 'pro';
 
-    public string $schemaVersion = '1.0.1';
+    public string $schemaVersion = '1.1.0';
     public bool $hasCpSettings = true;
     public bool $hasCpSection = true;
 
@@ -76,6 +82,7 @@ class Plugin extends BasePlugin
                 'commerceIntegration' => CommerceIntegration::class,
                 'headcountIntegration' => HeadcountIntegration::class,
                 'reporting' => Reporting::class,
+                'activityLog' => ActivityLog::class,
             ],
         ];
     }
@@ -106,6 +113,7 @@ class Plugin extends BasePlugin
             $this->registerSiteRoutes();
             $this->registerPermissions();
             $this->registerWidgets();
+            $this->registerActivityLogging();
         });
     }
 
@@ -152,6 +160,14 @@ class Plugin extends BasePlugin
             $nav['subnav']['certificates'] = [
                 'label' => Craft::t('diploma', 'Certificates'),
                 'url' => 'diploma/certificates',
+            ];
+        }
+
+        if (Craft::$app->getUser()->checkPermission('diploma:viewActivityLog') ||
+            Craft::$app->getUser()->checkPermission('diploma:accessPlugin')) {
+            $nav['subnav']['activity'] = [
+                'label' => Craft::t('diploma', 'Activity Log'),
+                'url' => 'diploma/activity',
             ];
         }
 
@@ -231,11 +247,15 @@ class Plugin extends BasePlugin
                 // Certificates
                 $event->rules['diploma/certificates'] = 'diploma/certificates/index';
 
+                // Activity log
+                $event->rules['diploma/activity'] = 'diploma/activity-log/index';
+
                 // Analytics (Pro)
                 $event->rules['diploma/analytics'] = 'diploma/dashboard/analytics';
 
                 // Settings
                 $event->rules['diploma/settings'] = 'diploma/settings/index';
+                $event->rules['diploma/settings/lesson-fields'] = 'diploma/settings/lesson-fields';
                 $event->rules['diploma/settings/certificates'] = 'diploma/settings/certificates';
                 $event->rules['diploma/settings/commerce'] = 'diploma/settings/commerce';
                 $event->rules['diploma/settings/headcount'] = 'diploma/settings/headcount';
@@ -296,6 +316,9 @@ class Plugin extends BasePlugin
                         'diploma:viewCertificates' => [
                             'label' => Craft::t('diploma', 'View certificates'),
                         ],
+                        'diploma:viewActivityLog' => [
+                            'label' => Craft::t('diploma', 'View activity log'),
+                        ],
                         'diploma:viewAnalytics' => [
                             'label' => Craft::t('diploma', 'View analytics'),
                         ],
@@ -334,5 +357,45 @@ class Plugin extends BasePlugin
     private function registerTwigExtension(): void
     {
         Craft::$app->getView()->registerTwigExtension(new DiplomaTwigExtension());
+    }
+
+    /**
+     * Wires the activity log up to the plugin's own events so learner actions
+     * are recorded automatically. Recording is always on (both editions) —
+     * to make it Pro-only, guard this method with `$this->is(self::EDITION_PRO)`.
+     */
+    private function registerActivityLogging(): void
+    {
+        $activityLog = $this->activityLog;
+
+        Event::on(
+            Enrollments::class,
+            Enrollments::EVENT_AFTER_ENROLL,
+            fn(EnrollmentEvent $event) => $activityLog->handleEnroll($event)
+        );
+
+        Event::on(
+            Enrollments::class,
+            Enrollments::EVENT_AFTER_COMPLETE_COURSE,
+            fn(EnrollmentEvent $event) => $activityLog->handleCompleteCourse($event)
+        );
+
+        Event::on(
+            ProgressTracker::class,
+            ProgressTracker::EVENT_AFTER_COMPLETE_LESSON,
+            fn(LessonCompletionEvent $event) => $activityLog->handleCompleteLesson($event)
+        );
+
+        Event::on(
+            QuizGrader::class,
+            QuizGrader::EVENT_AFTER_GRADE_ATTEMPT,
+            fn(QuizAttemptEvent $event) => $activityLog->handleGradeAttempt($event)
+        );
+
+        Event::on(
+            Certificates::class,
+            Certificates::EVENT_AFTER_ISSUE_CERTIFICATE,
+            fn(CertificateEvent $event) => $activityLog->handleIssueCertificate($event)
+        );
     }
 }

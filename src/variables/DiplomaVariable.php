@@ -99,4 +99,19 @@ class DiplomaVariable
 
         return Plugin::getInstance()->enrollments->hasCompleted($course->id, $user->id);
     }
+
+    /**
+     * Returns a user's activity-log entries (enrollments, completions, quiz
+     * attempts, certificates), most recent first.
+     *
+     * @return \justinholtweb\diploma\models\ActivityLog[]
+     */
+    public function getUserActivity(?User $user = null, int $limit = 100): array
+    {
+        if (!$user) {
+            return [];
+        }
+
+        return Plugin::getInstance()->activityLog->getActivityForUser($user->id, $limit);
+    }
 }

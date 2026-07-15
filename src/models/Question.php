@@ -24,7 +24,7 @@ class Question extends Model
     {
         return [
             [['quizId', 'questionType', 'questionText'], 'required'],
-            [['questionType'], 'in', 'range' => ['multipleChoice', 'trueFalse', 'shortAnswer', 'matching']],
+            [['questionType'], 'in', 'range' => ['multipleChoice', 'multipleResponse', 'trueFalse', 'shortAnswer', 'matching']],
             [['points', 'sortOrder'], 'integer'],
             [['points'], 'integer', 'min' => 0],
         ];

@@ -1,0 +1,23 @@
+{% extends 'diploma/_layouts/plugin' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Lesson Content Fields'|t('diploma') %}
+{% set selectedSubnavItem = 'settings' %}
+{% set fullPageForm = true %}
+
+{% block pluginContent %}
+    <input type="hidden" name="action" value="diploma/settings/save-lesson-field-layout">
+    {{ redirectInput('diploma/settings/lesson-fields') }}
+
+    <div class="buttons" style="margin-bottom: 16px;">
+        <a href="{{ url('diploma/settings') }}" class="btn">{{ '← Back to Settings'|t('diploma') }}</a>
+    </div>
+
+    <p>
+        {{ 'Design the fields that make up a lesson’s body content. Add a rich-text/CKEditor field, Assets fields for embedded PDFs, video or images, Matrix blocks, links — anything Craft supports. These fields appear on every lesson’s edit screen and are available in your templates via the lesson element.'|t('diploma') }}
+    </p>
+
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: fieldLayout,
+    }) }}
+{% endblock %}

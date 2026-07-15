@@ -7,6 +7,7 @@ use craft\base\Element;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Restore;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use justinholtweb\diploma\elements\db\LessonQuery;
 use justinholtweb\diploma\records\LessonRecord;
 use yii\base\InvalidConfigException;
@@ -59,6 +60,22 @@ class Lesson extends Element
     public static function hasStatuses(): bool
     {
         return false;
+    }
+
+    /**
+     * Lessons share a single, admin-designed field layout (managed under
+     * Diploma → Settings → Lesson Content Fields). This lets a lesson hold
+     * rich mixed content — CKEditor/rich text, embedded assets (PDF, video,
+     * images), Matrix blocks, links, etc. — via Craft's native fields.
+     */
+    public function getFieldLayout(): ?FieldLayout
+    {
+        $fieldLayout = parent::getFieldLayout();
+        if ($fieldLayout) {
+            return $fieldLayout;
+        }
+
+        return Craft::$app->getFields()->getLayoutByType(self::class);
     }
 
     public static function find(): LessonQuery

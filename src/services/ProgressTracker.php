@@ -7,12 +7,19 @@ use craft\base\Component;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use justinholtweb\diploma\elements\Lesson;
+use justinholtweb\diploma\events\LessonCompletionEvent;
 use justinholtweb\diploma\Plugin;
 use justinholtweb\diploma\records\EnrollmentRecord;
 use justinholtweb\diploma\records\ProgressRecord;
 
 class ProgressTracker extends Component
 {
+    /**
+     * @event LessonCompletionEvent Fired when a lesson is first completed
+     * within an enrollment.
+     */
+    public const EVENT_AFTER_COMPLETE_LESSON = 'afterCompleteLesson';
+
     public function completeLesson(int $enrollmentId, int $lessonId, int $timeSpent = 0): bool
     {
         // Check for existing progress
@@ -21,11 +28,22 @@ class ProgressTracker extends Component
             ->one();
 
         if ($existing) {
+            $justCompleted = false;
             if (!$existing->completedAt) {
                 $existing->completedAt = Db::prepareDateForDb(new \DateTime());
+                $justCompleted = true;
             }
             $existing->timeSpent = $existing->timeSpent + $timeSpent;
-            return $existing->save(false);
+
+            if (!$existing->save(false)) {
+                return false;
+            }
+
+            if ($justCompleted) {
+                $this->onLessonCompleted($enrollmentId, $lessonId, $timeSpent);
+            }
+
+            return true;
         }
 
         $record = new ProgressRecord();
@@ -39,10 +57,27 @@ class ProgressTracker extends Component
             return false;
         }
 
-        // Check if course is now complete
-        $this->checkCourseCompletion($enrollmentId);
+        $this->onLessonCompleted($enrollmentId, $lessonId, $timeSpent);
 
         return true;
+    }
+
+    /**
+     * Fires the lesson-completion event and checks whether the course is
+     * now finished.
+     */
+    private function onLessonCompleted(int $enrollmentId, int $lessonId, int $timeSpent): void
+    {
+        if ($this->hasEventHandlers(self::EVENT_AFTER_COMPLETE_LESSON)) {
+            $this->trigger(self::EVENT_AFTER_COMPLETE_LESSON, new LessonCompletionEvent([
+                'enrollmentId' => $enrollmentId,
+                'lessonId' => $lessonId,
+                'timeSpent' => $timeSpent,
+            ]));
+        }
+
+        // Check if course is now complete
+        $this->checkCourseCompletion($enrollmentId);
     }
 
     public function getCourseProgress(int $courseId, int $userId): object
