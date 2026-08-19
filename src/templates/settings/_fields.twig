@@ -1,3 +1,7 @@
+{# Field names carry no `settings[…]` prefix: `craft\base\Plugin::settingsResponse()` runs this
+   template's output through `View::namespaceInputs(…, 'settings')`, so a name written as
+   `settings[foo]` here posts as `settings[settings][foo]` and saves nothing at all — the screen
+   looks perfect, Craft reports "Plugin settings saved", and every edit is silently discarded. #}
 {% import '_includes/forms' as forms %}
 
 <div id="fields">
@@ -7,7 +11,7 @@
         label: 'Enable Certificates'|t('diploma'),
         instructions: 'Automatically issue certificates when courses are completed.'|t('diploma'),
         id: 'enableCertificates',
-        name: 'settings[enableCertificates]',
+        name: 'enableCertificates',
         on: settings.enableCertificates,
     }) }}
 
@@ -15,7 +19,7 @@
         label: 'Auto-Issue Certificates'|t('diploma'),
         instructions: 'Generate certificates automatically when a student completes a course.'|t('diploma'),
         id: 'autoIssueCertificate',
-        name: 'settings[autoIssueCertificate]',
+        name: 'autoIssueCertificate',
         on: settings.autoIssueCertificate,
     }) }}
 
@@ -23,7 +27,7 @@
         label: 'Require Passing Quiz'|t('diploma'),
         instructions: 'Require students to pass the course quiz before marking as completed.'|t('diploma'),
         id: 'requirePassingQuiz',
-        name: 'settings[requirePassingQuiz]',
+        name: 'requirePassingQuiz',
         on: settings.requirePassingQuiz,
     }) }}
 
@@ -31,7 +35,7 @@
         label: 'Default Passing Score (%)'|t('diploma'),
         instructions: 'Default minimum score for quizzes when not set per quiz.'|t('diploma'),
         id: 'defaultPassingScore',
-        name: 'settings[defaultPassingScore]',
+        name: 'defaultPassingScore',
         value: settings.defaultPassingScore,
         type: 'number',
         min: 0,
@@ -46,7 +50,7 @@
         label: 'Enable Course URLs'|t('diploma'),
         instructions: 'Give published courses their own front-end URLs, routed to a template.'|t('diploma'),
         id: 'enableCourseUrls',
-        name: 'settings[enableCourseUrls]',
+        name: 'enableCourseUrls',
         on: settings.enableCourseUrls,
         toggle: 'course-url-fields',
     }) }}
@@ -56,7 +60,7 @@
             label: 'Course URI Format'|t('diploma'),
             instructions: 'The URI pattern for courses, e.g. `courses/{slug}`.'|t('diploma'),
             id: 'courseUriFormat',
-            name: 'settings[courseUriFormat]',
+            name: 'courseUriFormat',
             value: settings.courseUriFormat,
             errors: settings.getErrors('courseUriFormat'),
             code: true,
@@ -66,7 +70,7 @@
             label: 'Course Template'|t('diploma'),
             instructions: 'The template that renders a course page. It receives a `course` variable.'|t('diploma'),
             id: 'courseTemplate',
-            name: 'settings[courseTemplate]',
+            name: 'courseTemplate',
             value: settings.courseTemplate,
             errors: settings.getErrors('courseTemplate'),
             code: true,

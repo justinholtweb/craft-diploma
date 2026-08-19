@@ -8,8 +8,13 @@
     <input type="hidden" name="action" value="diploma/settings/save">
     {{ redirectInput('diploma/settings') }}
 
-    {% include 'diploma/settings/_fields' with {
-        settings: settings,
-        plugin: plugin,
-    } only %}
+    {# `_fields.twig` writes bare input names because `Plugin::settingsHtml()` is namespaced under
+       `settings` by Craft. This page posts straight to `diploma/settings/save`, which reads the
+       `settings` body param, so it has to apply the same namespace itself. #}
+    {% namespace 'settings' %}
+        {% include 'diploma/settings/_fields' with {
+            settings: settings,
+            plugin: plugin,
+        } only %}
+    {% endnamespace %}
 {% endblock %}

@@ -2,7 +2,7 @@
     "name": "justinholtweb/craft-diploma",
     "description": "LMS plugin for Craft CMS 5. Create courses, lessons, quizzes, track progress, and issue certificates.",
     "type": "craft-plugin",
-    "version": "5.1.0",
+    "version": "5.1.1",
     "license": "proprietary",
     "minimum-stability": "dev",
     "prefer-stable": true,

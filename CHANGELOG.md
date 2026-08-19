@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.1.1 - 2026-08-19
+
+### Fixed
+- Plugin settings saved from **Settings → Plugins → Diploma** were silently discarded. Craft namespaces that screen's output under `settings`, so the fields' `settings[…]` names posted as `settings[settings][…]` and never reached the settings model — the page reported "Plugin settings saved" while every change was thrown away. The shared fields template now uses bare input names, and the **Diploma → Settings** screen (which posts directly to the plugin's own save action) applies the `settings` namespace itself.
+
 ## 5.1.0 - 2026-07-15
 
 ### Added
