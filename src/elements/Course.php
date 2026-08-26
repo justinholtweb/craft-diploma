@@ -8,6 +8,7 @@ use craft\elements\actions\Delete;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
+use craft\enums\Color;
 use justinholtweb\diploma\elements\db\CourseQuery;
 use justinholtweb\diploma\enums\CourseStatus;
 use justinholtweb\diploma\Plugin;
@@ -106,9 +107,9 @@ class Course extends Element
     public static function statuses(): array
     {
         return [
-            'draft' => ['label' => Craft::t('diploma', 'Draft'), 'color' => 'white'],
-            'published' => ['label' => Craft::t('diploma', 'Published'), 'color' => 'green'],
-            'archived' => ['label' => Craft::t('diploma', 'Archived'), 'color' => 'light'],
+            'draft' => ['label' => Craft::t('diploma', 'Draft'), 'color' => Color::White],
+            'published' => ['label' => Craft::t('diploma', 'Published'), 'color' => Color::Green],
+            'archived' => ['label' => Craft::t('diploma', 'Archived'), 'color' => Color::Gray],
         ];
     }
 

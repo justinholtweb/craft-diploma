@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.1.2 - 2026-08-26
+
+### Fixed
+
+- **The enrolments table and the dashboard's recent-enrolments list showed raw numeric IDs** in the User and Course columns — `31491` instead of a name, which tells an administrator nothing. `EnrollmentRecord` gained `getEnrolledUser()` and `getEnrolledCourse()`, and both screens now show the user's name and the course title, falling back to `#id` when the record has since been deleted.
+- **The courses index returned HTTP 500 whenever the status column was shown.** Craft 5 expects `statuses()` to return `craft\enums\Color` cases; the string colours this plugin returned made `Cp::componentStatusLabelHtml()` fail with "Attempt to read property `value` on string", leaving the index blank with no error shown. `'light'` is not a Color case and is now `Color::Gray`.
+
 ## 5.1.1 - 2026-08-19
 
 ### Fixed

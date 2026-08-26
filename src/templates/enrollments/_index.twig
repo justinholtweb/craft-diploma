@@ -21,8 +21,8 @@
                 {% for enrollment in enrollments %}
                     <tr>
                         <td><a href="{{ url('diploma/enrollments/' ~ enrollment.id) }}">#{{ enrollment.id }}</a></td>
-                        <td>{{ enrollment.userId }}</td>
-                        <td>{{ enrollment.courseId }}</td>
+                        <td>{% set eu = enrollment.getEnrolledUser() %}{{ eu ? (eu.fullName ?: eu.username) : '#' ~ enrollment.userId }}</td>
+                        <td>{% set ec = enrollment.getEnrolledCourse() %}{{ ec ? ec.title : '#' ~ enrollment.courseId }}</td>
                         <td>{{ enrollment.enrollmentStatus|capitalize }}</td>
                         <td>{{ enrollment.source ?? '—' }}</td>
                         <td>{{ enrollment.enrolledAt|date('M j, Y g:ia') }}</td>
