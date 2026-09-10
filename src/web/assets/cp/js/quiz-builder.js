@@ -30,6 +30,23 @@
         showQuestionForm();
     });
 
+    builder.addEventListener('click', function (e) {
+        const $editBtn = e.target.closest('.edit-question');
+        if ($editBtn) {
+            const existingQuestion = JSON.parse($editBtn.dataset.question);
+            showQuestionForm(existingQuestion);
+            return;
+        }
+
+        const $deleteBtn = e.target.closest('.delete-question');
+        if ($deleteBtn) {
+            const $item = $deleteBtn.closest('.question-item');
+            if ($item && confirm('Delete this question? This cannot be undone.')) {
+                deleteQuestion($item.dataset.id);
+            }
+        }
+    });
+
     function showQuestionForm(existingQuestion) {
         const $modal = $('<form class="modal diploma-question-modal"/>');
         const $body = $('<div class="body"/>').appendTo($modal);
@@ -179,6 +196,32 @@
             .catch(function () {
                 $saveBtn.removeClass('disabled').removeAttr('disabled').text('Save');
                 Craft.cp.displayError('Couldn\'t save question.');
+            });
+    }
+
+    function deleteQuestion(questionId) {
+        const formData = new FormData();
+        formData.append('questionId', questionId);
+        formData.append(Craft.csrfTokenName, Craft.csrfTokenValue);
+
+        fetch(Craft.getActionUrl('diploma/questions/delete'), {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: formData,
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.message) {
+                    Craft.cp.displayNotice(data.message);
+                }
+                if (data && data.success !== false) {
+                    location.reload();
+                } else {
+                    Craft.cp.displayError((data && data.message) || 'Couldn\'t delete question.');
+                }
+            })
+            .catch(function () {
+                Craft.cp.displayError('Couldn\'t delete question.');
             });
     }
 })(jQuery);

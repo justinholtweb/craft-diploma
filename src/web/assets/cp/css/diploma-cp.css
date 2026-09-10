@@ -84,6 +84,11 @@
     margin-bottom: 8px;
 }
 
+.diploma-question-list .question-item .question-actions {
+    display: flex;
+    gap: 6px;
+}
+
 .diploma-progress-bar {
     height: 8px;
     background: var(--hairline-color);

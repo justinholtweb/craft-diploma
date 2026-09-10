@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.1.3 - 2026-09-10
+
+### Fixed
+
+- **Quiz questions couldn't be edited or deleted from the control panel.** `QuestionsController` already supported saving over an existing question and deleting one, but the quiz edit screen never exposed either — question items in the list weren't clickable and carried no edit/delete controls. Each question now has Edit and Delete buttons; Edit reopens the question modal pre-filled with its existing type, text, points, explanation, and answers, and Delete removes it after confirmation.
+
 ## 5.1.2 - 2026-08-26
 
 ### Fixed

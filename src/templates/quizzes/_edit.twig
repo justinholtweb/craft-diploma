@@ -114,6 +114,21 @@
             {% if questions|length %}
                 <div class="diploma-question-list" id="question-list">
                     {% for question in questions %}
+                        {% set answersData = [] %}
+                        {% for answer in question.answers %}
+                            {% set answersData = answersData|merge([{
+                                answerText: answer.answerText,
+                                isCorrect: answer.isCorrect,
+                            }]) %}
+                        {% endfor %}
+                        {% set questionData = {
+                            id: question.id,
+                            questionType: question.questionType,
+                            questionText: question.questionText,
+                            explanation: question.explanation,
+                            points: question.points,
+                            answers: answersData,
+                        } %}
                         <div class="question-item" data-id="{{ question.id }}">
                             <div class="question-header">
                                 <strong>{{ loop.index }}. {{ question.questionText|truncate(80) }}</strong>
@@ -131,6 +146,10 @@
                             {% if question.explanation %}
                                 <p class="light" style="margin-top: 4px;"><em>{{ question.explanation }}</em></p>
                             {% endif %}
+                            <div class="question-actions" style="margin-top: 10px;">
+                                <button type="button" class="btn small edit-question" data-question="{{ questionData|json_encode }}">{{ 'Edit'|t('diploma') }}</button>
+                                <button type="button" class="btn small delete-question">{{ 'Delete'|t('diploma') }}</button>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
