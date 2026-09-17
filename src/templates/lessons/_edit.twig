@@ -40,49 +40,41 @@
 
         <h2>{{ 'Lesson Settings'|t('diploma') }}</h2>
 
-        <div class="flex">
-            <div class="flex-grow">
-                {{ forms.selectField({
-                    label: 'Lesson Type'|t('diploma'),
-                    id: 'lessonType',
-                    name: 'lessonType',
-                    value: lesson.lessonType,
-                    options: typeOptions,
-                }) }}
-            </div>
-            <div class="flex-grow">
-                {{ forms.textField({
-                    label: 'Estimated Duration (minutes)'|t('diploma'),
-                    id: 'estimatedDuration',
-                    name: 'estimatedDuration',
-                    value: lesson.estimatedDuration,
-                    type: 'number',
-                    min: 0,
-                }) }}
-            </div>
+        <div class="diploma-field-row">
+            {{ forms.selectField({
+                label: 'Lesson Type'|t('diploma'),
+                id: 'lessonType',
+                name: 'lessonType',
+                value: lesson.lessonType,
+                options: typeOptions,
+            }) }}
+            {{ forms.textField({
+                label: 'Estimated Duration (minutes)'|t('diploma'),
+                id: 'estimatedDuration',
+                name: 'estimatedDuration',
+                value: lesson.estimatedDuration,
+                type: 'number',
+                min: 0,
+            }) }}
         </div>
 
-        <div class="flex">
-            <div class="flex-grow">
-                {{ forms.textField({
-                    label: 'Sort Order'|t('diploma'),
-                    id: 'sortOrder',
-                    name: 'sortOrder',
-                    value: lesson.sortOrder,
-                    type: 'number',
-                    min: 0,
-                }) }}
-            </div>
-            <div class="flex-grow">
-                {{ forms.selectField({
-                    label: 'Prerequisite Lesson'|t('diploma'),
-                    instructions: 'Lesson that must be completed first.'|t('diploma'),
-                    id: 'prerequisiteLessonId',
-                    name: 'prerequisiteLessonId',
-                    value: lesson.prerequisiteLessonId,
-                    options: prerequisiteOptions,
-                }) }}
-            </div>
+        <div class="diploma-field-row">
+            {{ forms.textField({
+                label: 'Sort Order'|t('diploma'),
+                id: 'sortOrder',
+                name: 'sortOrder',
+                value: lesson.sortOrder,
+                type: 'number',
+                min: 0,
+            }) }}
+            {{ forms.selectField({
+                label: 'Prerequisite Lesson'|t('diploma'),
+                instructions: 'Lesson that must be completed first.'|t('diploma'),
+                id: 'prerequisiteLessonId',
+                name: 'prerequisiteLessonId',
+                value: lesson.prerequisiteLessonId,
+                options: prerequisiteOptions,
+            }) }}
         </div>
 
         {{ forms.textField({

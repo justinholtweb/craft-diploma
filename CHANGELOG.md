@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.1.4 - 2026-09-17
+
+### Fixed
+
+- **Side-by-side fields on the course, lesson and quiz edit screens had no vertical spacing between rows** — the second column in particular ran a field's label straight into the control above it (Difficulty Level into Enrollment Limit, Estimated Duration into Prerequisite Lesson, Time Limit into Questions Per Attempt). Craft zeroes the margins of a `.field` that is the only child of its wrapper, so the `.flex` / `.flex-grow` pairs those screens used collapsed the 24px rhythm to nothing. The rows are now a `.diploma-field-row` grid that owns both the column gap and the vertical spacing. Within a row the two fields keep their labels on one line and align their inputs even when only one of them carries instructions, and the row drops to a single column below 768px.
+
 ## 5.1.3 - 2026-09-10
 
 ### Fixed

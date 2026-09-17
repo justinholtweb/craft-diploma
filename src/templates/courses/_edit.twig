@@ -43,49 +43,41 @@
 
         <h2>{{ 'Course Settings'|t('diploma') }}</h2>
 
-        <div class="flex">
-            <div class="flex-grow">
-                {{ forms.selectField({
-                    label: 'Status'|t('diploma'),
-                    id: 'courseStatus',
-                    name: 'courseStatus',
-                    value: course.courseStatus,
-                    options: statusOptions,
-                }) }}
-            </div>
-            <div class="flex-grow">
-                {{ forms.selectField({
-                    label: 'Difficulty Level'|t('diploma'),
-                    id: 'difficultyLevel',
-                    name: 'difficultyLevel',
-                    value: course.difficultyLevel,
-                    options: difficultyOptions,
-                }) }}
-            </div>
+        <div class="diploma-field-row">
+            {{ forms.selectField({
+                label: 'Status'|t('diploma'),
+                id: 'courseStatus',
+                name: 'courseStatus',
+                value: course.courseStatus,
+                options: statusOptions,
+            }) }}
+            {{ forms.selectField({
+                label: 'Difficulty Level'|t('diploma'),
+                id: 'difficultyLevel',
+                name: 'difficultyLevel',
+                value: course.difficultyLevel,
+                options: difficultyOptions,
+            }) }}
         </div>
 
-        <div class="flex">
-            <div class="flex-grow">
-                {{ forms.textField({
-                    label: 'Estimated Duration (minutes)'|t('diploma'),
-                    id: 'estimatedDuration',
-                    name: 'estimatedDuration',
-                    value: course.estimatedDuration,
-                    type: 'number',
-                    min: 0,
-                }) }}
-            </div>
-            <div class="flex-grow">
-                {{ forms.textField({
-                    label: 'Enrollment Limit'|t('diploma'),
-                    instructions: 'Leave blank for unlimited.'|t('diploma'),
-                    id: 'enrollmentLimit',
-                    name: 'enrollmentLimit',
-                    value: course.enrollmentLimit,
-                    type: 'number',
-                    min: 0,
-                }) }}
-            </div>
+        <div class="diploma-field-row">
+            {{ forms.textField({
+                label: 'Estimated Duration (minutes)'|t('diploma'),
+                id: 'estimatedDuration',
+                name: 'estimatedDuration',
+                value: course.estimatedDuration,
+                type: 'number',
+                min: 0,
+            }) }}
+            {{ forms.textField({
+                label: 'Enrollment Limit'|t('diploma'),
+                instructions: 'Leave blank for unlimited.'|t('diploma'),
+                id: 'enrollmentLimit',
+                name: 'enrollmentLimit',
+                value: course.enrollmentLimit,
+                type: 'number',
+                min: 0,
+            }) }}
         </div>
 
         {{ forms.textField({

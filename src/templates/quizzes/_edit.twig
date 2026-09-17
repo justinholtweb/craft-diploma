@@ -37,55 +37,47 @@
             options: courseOptions,
         }) }}
 
-        <div class="flex">
-            <div class="flex-grow">
-                {{ forms.textField({
-                    label: 'Passing Score (%)'|t('diploma'),
-                    id: 'passingScore',
-                    name: 'passingScore',
-                    value: quiz.passingScore,
-                    type: 'number',
-                    min: 0,
-                    max: 100,
-                    required: true,
-                }) }}
-            </div>
-            <div class="flex-grow">
-                {{ forms.textField({
-                    label: 'Time Limit (seconds)'|t('diploma'),
-                    instructions: 'Leave blank for no time limit.'|t('diploma'),
-                    id: 'timeLimit',
-                    name: 'timeLimit',
-                    value: quiz.timeLimit,
-                    type: 'number',
-                    min: 0,
-                }) }}
-            </div>
+        <div class="diploma-field-row">
+            {{ forms.textField({
+                label: 'Passing Score (%)'|t('diploma'),
+                id: 'passingScore',
+                name: 'passingScore',
+                value: quiz.passingScore,
+                type: 'number',
+                min: 0,
+                max: 100,
+                required: true,
+            }) }}
+            {{ forms.textField({
+                label: 'Time Limit (seconds)'|t('diploma'),
+                instructions: 'Leave blank for no time limit.'|t('diploma'),
+                id: 'timeLimit',
+                name: 'timeLimit',
+                value: quiz.timeLimit,
+                type: 'number',
+                min: 0,
+            }) }}
         </div>
 
-        <div class="flex">
-            <div class="flex-grow">
-                {{ forms.textField({
-                    label: 'Max Attempts'|t('diploma'),
-                    instructions: 'Leave blank for unlimited.'|t('diploma'),
-                    id: 'maxAttempts',
-                    name: 'maxAttempts',
-                    value: quiz.maxAttempts,
-                    type: 'number',
-                    min: 1,
-                }) }}
-            </div>
-            <div class="flex-grow">
-                {{ forms.textField({
-                    label: 'Questions Per Attempt'|t('diploma'),
-                    instructions: 'Leave blank to show all.'|t('diploma'),
-                    id: 'questionsPerAttempt',
-                    name: 'questionsPerAttempt',
-                    value: quiz.questionsPerAttempt,
-                    type: 'number',
-                    min: 1,
-                }) }}
-            </div>
+        <div class="diploma-field-row">
+            {{ forms.textField({
+                label: 'Max Attempts'|t('diploma'),
+                instructions: 'Leave blank for unlimited.'|t('diploma'),
+                id: 'maxAttempts',
+                name: 'maxAttempts',
+                value: quiz.maxAttempts,
+                type: 'number',
+                min: 1,
+            }) }}
+            {{ forms.textField({
+                label: 'Questions Per Attempt'|t('diploma'),
+                instructions: 'Leave blank to show all.'|t('diploma'),
+                id: 'questionsPerAttempt',
+                name: 'questionsPerAttempt',
+                value: quiz.questionsPerAttempt,
+                type: 'number',
+                min: 1,
+            }) }}
         </div>
 
         {{ forms.lightswitchField({
