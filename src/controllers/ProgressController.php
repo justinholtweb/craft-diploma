@@ -16,16 +16,22 @@ class ProgressController extends Controller
         $this->requirePostRequest();
         $this->requireLogin();
 
-        $courseId = Craft::$app->getRequest()->getRequiredBodyParam('courseId');
-        $userId = Craft::$app->getUser()->getId();
+        $courseId = (int)Craft::$app->getRequest()->getRequiredBodyParam('courseId');
+        $userId = (int)Craft::$app->getUser()->getId();
+        $enrollments = Plugin::getInstance()->enrollments;
 
-        $enrollment = Plugin::getInstance()->enrollments->enroll($courseId, $userId, 'self');
+        // Self-enrolment is for open, free courses only — paid, invitation-only, unpublished
+        // and full courses are refused here, and a lapsed enrolment is never reactivated by
+        // the learner. Commerce, Headcount and admins enrol through their own paths.
+        $problem = $enrollments->selfEnrollmentProblem($courseId, $userId);
+        $enrollment = $problem === null ? $enrollments->enroll($courseId, $userId, 'self') : null;
 
         if (!$enrollment) {
+            $message = $problem ?? Craft::t('diploma', 'Could not enroll in course.');
             if (Craft::$app->getRequest()->getAcceptsJson()) {
-                return $this->asFailure('Could not enroll in course.');
+                return $this->asFailure($message);
             }
-            Craft::$app->getSession()->setError(Craft::t('diploma', 'Could not enroll in course.'));
+            Craft::$app->getSession()->setError($message);
             return $this->redirect(Craft::$app->getRequest()->getReferrer());
         }
 
@@ -53,7 +59,7 @@ class ProgressController extends Controller
         }
 
         $enrollment = Plugin::getInstance()->enrollments->getEnrollment($lesson->courseId, $userId);
-        if (!$enrollment) {
+        if (!$enrollment || !in_array($enrollment->enrollmentStatus, ['active', 'completed'], true)) {
             return $this->asFailure('Not enrolled in this course.');
         }
 

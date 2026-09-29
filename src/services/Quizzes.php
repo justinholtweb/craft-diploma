@@ -33,6 +33,7 @@ class Quizzes extends Component
 
     public function getQuestionsByQuiz(int $quizId): array
     {
+        /** @var QuestionRecord[] $records */
         $records = QuestionRecord::find()
             ->where(['quizId' => $quizId])
             ->orderBy(['sortOrder' => SORT_ASC])
@@ -132,6 +133,7 @@ class Quizzes extends Component
 
     public function getAnswersByQuestion(int $questionId): array
     {
+        /** @var AnswerRecord[] $records */
         $records = AnswerRecord::find()
             ->where(['questionId' => $questionId])
             ->orderBy(['sortOrder' => SORT_ASC])

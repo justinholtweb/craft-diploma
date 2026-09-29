@@ -69,12 +69,55 @@ class Enrollments extends Component
             ->exists();
     }
 
+    /**
+     * Enrols a user, or returns the enrolment they already have.
+     *
+     * - An **active or completed** enrolment is returned unchanged.
+     * - An **expired or cancelled** one is reactivated — for Commerce, Headcount and admins. A
+     *   learner cannot reactivate their own lapsed enrolment by self-enrolling; that is exactly
+     *   how a membership that expired would be renewed for free. Returns null for `self`.
+     * - Otherwise a new enrolment is created, within the course's enrolment limit.
+     *
+     * The `(courseId, userId)` pair is unique, so a lapsed enrolment has to be reactivated rather
+     * than inserted again — inserting failed on the index, which is why re-subscribing through
+     * Headcount used to leave the learner locked out.
+     *
+     * Whether a learner may enrol *themselves* at all is {@see selfEnrollmentProblem()}.
+     */
     public function enroll(int $courseId, int $userId, string $source = 'self', ?int $sourceId = null): ?Enrollment
     {
-        // Check for existing enrollment
-        $existing = $this->getEnrollment($courseId, $userId);
-        if ($existing && $existing->enrollmentStatus === 'active') {
-            return $existing;
+        /** @var EnrollmentRecord|null $existing */
+        $existing = EnrollmentRecord::find()
+            ->where(['courseId' => $courseId, 'userId' => $userId])
+            ->one();
+
+        if ($existing && in_array($existing->enrollmentStatus, ['active', 'completed'], true)) {
+            return $this->recordToModel($existing);
+        }
+
+        if ($existing) {
+            if ($source === 'self') {
+                return null;
+            }
+
+            $existing->enrollmentStatus = 'active';
+            $existing->enrolledAt = Db::prepareDateForDb(new \DateTime());
+            $existing->source = $source;
+            $existing->sourceId = $sourceId;
+
+            if (!$existing->save(false)) {
+                return null;
+            }
+
+            $enrollment = $this->recordToModel($existing);
+
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ENROLL)) {
+                $this->trigger(self::EVENT_AFTER_ENROLL, new EnrollmentEvent([
+                    'enrollment' => $enrollment,
+                ]));
+            }
+
+            return $enrollment;
         }
 
         // Check enrollment limit
@@ -110,8 +153,72 @@ class Enrollments extends Component
         return $enrollment;
     }
 
+    /**
+     * Why a user may not enrol themselves in a course, or null if they may.
+     *
+     * Self-enrolment is for free, open courses only. It is refused when the course:
+     *
+     * - does not exist, is disabled, or is not published;
+     * - is not in `open` enrolment mode;
+     * - is sold — linked to a Commerce product through a `diplomaCourses` field, or mapped to a
+     *   Headcount plan — whatever its mode says, because a course somebody forgot to switch to
+     *   `purchase` must not become free;
+     * - already has a lapsed enrolment for this user (only a purchase, a membership or an admin
+     *   reactivates one);
+     * - is full.
+     */
+    public function selfEnrollmentProblem(int $courseId, int $userId): ?string
+    {
+        $course = \justinholtweb\diploma\elements\Course::find()->id($courseId)->status(null)->one();
+
+        if ($course === null || !$course->enabled || $course->courseStatus !== 'published') {
+            return Craft::t('diploma', 'This course is not open for enrollment.');
+        }
+
+        if ($course->enrollmentMode !== 'open' || $this->isSold($courseId)) {
+            return Craft::t('diploma', 'This course cannot be joined directly.');
+        }
+
+        $existing = $this->getEnrollment($courseId, $userId);
+
+        if ($existing && in_array($existing->enrollmentStatus, ['cancelled', 'expired'], true)) {
+            return Craft::t('diploma', 'Your enrollment in this course has ended.');
+        }
+
+        if (!$existing && $course->enrollmentLimit && $course->enrollmentCount >= $course->enrollmentLimit) {
+            return Craft::t('diploma', 'This course is full.');
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether a course is sold: related from a `diplomaCourses` field (what CommerceIntegration
+     * enrols from) or mapped to a Headcount plan.
+     */
+    public function isSold(int $courseId): bool
+    {
+        $mapping = Plugin::getInstance()->getSettings()->headcountPlanMapping;
+
+        if (in_array($courseId, array_map('intval', $mapping), true)) {
+            return true;
+        }
+
+        $fieldIds = (new \craft\db\Query())
+            ->select('id')
+            ->from(\craft\db\Table::FIELDS)
+            ->where(['handle' => 'diplomaCourses'])
+            ->column();
+
+        return $fieldIds !== [] && (new \craft\db\Query())
+            ->from(\craft\db\Table::RELATIONS)
+            ->where(['fieldId' => $fieldIds, 'targetId' => $courseId])
+            ->exists();
+    }
+
     public function unenroll(int $courseId, int $userId): bool
     {
+        /** @var EnrollmentRecord|null $record */
         $record = EnrollmentRecord::find()
             ->where(['courseId' => $courseId, 'userId' => $userId])
             ->one();

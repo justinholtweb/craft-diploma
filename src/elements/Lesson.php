@@ -161,13 +161,13 @@ class Lesson extends Element
         return null;
     }
 
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         return match ($attribute) {
             'lessonType' => ucfirst($this->lessonType),
             'estimatedDuration' => $this->estimatedDuration ? $this->estimatedDuration . ' min' : '—',
             'isFree' => $this->isFree ? '<span class="status green"></span>Yes' : '—',
-            default => parent::tableAttributeHtml($attribute),
+            default => parent::attributeHtml($attribute),
         };
     }
 

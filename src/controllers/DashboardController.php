@@ -2,11 +2,9 @@
 
 namespace justinholtweb\diploma\controllers;
 
-use Craft;
 use craft\web\Controller;
 use justinholtweb\diploma\elements\Course;
 use justinholtweb\diploma\models\Edition;
-use justinholtweb\diploma\Plugin;
 use justinholtweb\diploma\records\EnrollmentRecord;
 use yii\web\Response;
 

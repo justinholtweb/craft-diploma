@@ -2,7 +2,6 @@
 
 namespace justinholtweb\diploma\services;
 
-use Craft;
 use craft\base\Component;
 use justinholtweb\diploma\elements\Course;
 use justinholtweb\diploma\records\CertificateRecord;

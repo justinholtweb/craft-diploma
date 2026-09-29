@@ -69,7 +69,7 @@ class ActivityLog extends Component
     {
         $enrollment = EnrollmentRecord::findOne($event->enrollmentId);
         $lesson = Lesson::find()->id($event->lessonId)->status(null)->one();
-        $lessonTitle = $lesson?->title ?? (string)$event->lessonId;
+        $lessonTitle = $lesson->title ?? (string)$event->lessonId;
 
         $this->log(ActivityType::LessonCompleted->value, [
             'userId' => $enrollment?->userId,
@@ -88,7 +88,7 @@ class ActivityLog extends Component
     {
         $attempt = $event->attempt;
         $quiz = $attempt->quizId ? Quiz::find()->id($attempt->quizId)->status(null)->one() : null;
-        $quizTitle = $quiz?->title ?? Craft::t('diploma', 'Quiz');
+        $quizTitle = $quiz->title ?? Craft::t('diploma', 'Quiz');
         $type = $attempt->passed ? ActivityType::QuizPassed : ActivityType::QuizFailed;
 
         $enrollment = $attempt->enrollmentId ? EnrollmentRecord::findOne($attempt->enrollmentId) : null;
@@ -263,7 +263,7 @@ class ActivityLog extends Component
         }
 
         $course = Plugin::getInstance()->courses->getById($courseId);
-        return $course?->title ?? (string)$courseId;
+        return $course->title ?? (string)$courseId;
     }
 
     private function userName(?int $userId): string
@@ -273,7 +273,7 @@ class ActivityLog extends Component
         }
 
         $user = Craft::$app->getUsers()->getUserById($userId);
-        return $user?->friendlyName ?? $user?->username ?? (string)$userId;
+        return $user->friendlyName ?? $user->username ?? (string)$userId;
     }
 
     private function recordToModel(ActivityLogRecord $record): ActivityLogModel

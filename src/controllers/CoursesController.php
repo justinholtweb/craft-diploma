@@ -101,6 +101,7 @@ class CoursesController extends Controller
         }
 
         $course->courseStatus = $request->getBodyParam('courseStatus', 'draft');
+        $course->enrollmentMode = $request->getBodyParam('enrollmentMode', $course->enrollmentMode);
         $course->difficultyLevel = $request->getBodyParam('difficultyLevel') ?: null;
         $course->estimatedDuration = $request->getBodyParam('estimatedDuration') ?: null;
         $course->enrollmentLimit = $request->getBodyParam('enrollmentLimit') ?: null;

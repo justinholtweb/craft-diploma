@@ -5,6 +5,10 @@ namespace justinholtweb\diploma\elements\db;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 
+/**
+ * @method \justinholtweb\diploma\elements\Course[] all($db = null)
+ * @method \justinholtweb\diploma\elements\Course|null one($db = null)
+ */
 class CourseQuery extends ElementQuery
 {
     public ?string $courseStatus = null;
@@ -39,6 +43,7 @@ class CourseQuery extends ElementQuery
 
         $this->query->addSelect([
             'diploma_courses.courseStatus',
+            'diploma_courses.enrollmentMode',
             'diploma_courses.difficultyLevel',
             'diploma_courses.estimatedDuration',
             'diploma_courses.enrollmentLimit',

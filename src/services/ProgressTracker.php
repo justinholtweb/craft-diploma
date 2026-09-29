@@ -2,7 +2,6 @@
 
 namespace justinholtweb\diploma\services;
 
-use Craft;
 use craft\base\Component;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -23,6 +22,7 @@ class ProgressTracker extends Component
     public function completeLesson(int $enrollmentId, int $lessonId, int $timeSpent = 0): bool
     {
         // Check for existing progress
+        /** @var ProgressRecord|null $existing */
         $existing = ProgressRecord::find()
             ->where(['enrollmentId' => $enrollmentId, 'lessonId' => $lessonId])
             ->one();

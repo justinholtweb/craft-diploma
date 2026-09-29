@@ -42,9 +42,9 @@ class Certificates extends Component
 
         // Snapshot metadata
         $record->metadata = json_encode([
-            'courseTitle' => $course?->title ?? '',
-            'userName' => $user?->friendlyName ?? '',
-            'userEmail' => $user?->email ?? '',
+            'courseTitle' => $course->title ?? '',
+            'userName' => $user->friendlyName ?? '',
+            'userEmail' => $user->email ?? '',
             'issuedDate' => date('F j, Y'),
         ]);
 

@@ -2,13 +2,11 @@
 
 namespace justinholtweb\diploma\services;
 
-use Craft;
 use craft\base\Component;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use justinholtweb\diploma\events\QuizAttemptEvent;
 use justinholtweb\diploma\models\QuizAttempt;
-use justinholtweb\diploma\models\QuizResponse;
 use justinholtweb\diploma\Plugin;
 use justinholtweb\diploma\records\AnswerRecord;
 use justinholtweb\diploma\records\QuizAttemptRecord;
@@ -61,10 +59,27 @@ class QuizGrader extends Component
         return $attempt;
     }
 
-    public function gradeAttempt(int $attemptId, array $responses): ?QuizAttempt
+    /**
+     * Grades an attempt — once.
+     *
+     * Refuses (returns null) an attempt that is already completed, so a score cannot be
+     * overwritten by grading again, and — when `$userId` is given — one that belongs to somebody
+     * else. Callers taking a request should always pass the user and use
+     * {@see findOpenAttempt()} first.
+     *
+     * Every question on the quiz counts towards `pointsPossible`, answered or not: scoring only
+     * the submitted questions let a learner answer one question and score 100%.
+     *
+     * @param array<int|string, mixed> $responses Question ID → response data.
+     */
+    public function gradeAttempt(int $attemptId, array $responses, ?int $userId = null): ?QuizAttempt
     {
         $record = QuizAttemptRecord::findOne($attemptId);
-        if (!$record) {
+        if (!$record || $record->completedAt !== null) {
+            return null;
+        }
+
+        if ($userId !== null && (int)$record->userId !== $userId) {
             return null;
         }
 
@@ -82,13 +97,18 @@ class QuizGrader extends Component
         $pointsEarned = 0;
         $pointsPossible = 0;
 
+        foreach ($questions as $q) {
+            $pointsPossible += $q->points;
+        }
+
         foreach ($responses as $questionId => $responseData) {
             $question = $questionMap[$questionId] ?? null;
             if (!$question) {
                 continue;
             }
 
-            $pointsPossible += $question->points;
+            $questionId = (int)$question->id;
+            $responseData = is_array($responseData) ? $responseData : [];
 
             $responseRecord = new QuizResponseRecord();
             $responseRecord->attemptId = $attemptId;
@@ -103,8 +123,9 @@ class QuizGrader extends Component
                     $answerId = (int)($responseData['answerId'] ?? 0);
                     $responseRecord->answerId = $answerId;
 
-                    // Check if the selected answer is correct
-                    $answer = AnswerRecord::findOne($answerId);
+                    // The answer must belong to *this* question — otherwise any known-correct
+                    // answer ID from anywhere passes every question.
+                    $answer = AnswerRecord::findOne(['id' => $answerId, 'questionId' => $questionId]);
                     $isCorrect = $answer && (bool)$answer->isCorrect;
                     break;
 
@@ -119,6 +140,7 @@ class QuizGrader extends Component
                     $responseRecord->responseText = $responseData['text'] ?? '';
                     // Short answers need manual grading by default,
                     // but we can auto-grade exact matches
+                    /** @var AnswerRecord[] $correctAnswers */
                     $correctAnswers = AnswerRecord::find()
                         ->where(['questionId' => $questionId, 'isCorrect' => true])
                         ->all();
@@ -188,14 +210,34 @@ class QuizGrader extends Component
         return $attempt;
     }
 
+    /**
+     * The attempt a learner may submit: theirs, on this quiz and enrolment, and not yet graded.
+     */
+    public function findOpenAttempt(int $attemptId, int $userId, int $quizId, int $enrollmentId): ?QuizAttemptRecord
+    {
+        /** @var QuizAttemptRecord|null $record */
+        $record = QuizAttemptRecord::find()
+            ->where([
+                'id' => $attemptId,
+                'userId' => $userId,
+                'quizId' => $quizId,
+                'enrollmentId' => $enrollmentId,
+                'completedAt' => null,
+            ])
+            ->one();
+
+        return $record;
+    }
+
     public function getAttempts(int $quizId, int $userId): array
     {
+        /** @var QuizAttemptRecord[] $records */
         $records = QuizAttemptRecord::find()
             ->where(['quizId' => $quizId, 'userId' => $userId])
             ->orderBy(['startedAt' => SORT_DESC])
             ->all();
 
-        return array_map(function ($record) {
+        return array_map(function($record) {
             $attempt = new QuizAttempt();
             $attempt->id = $record->id;
             $attempt->quizId = $record->quizId;

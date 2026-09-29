@@ -31,7 +31,7 @@ class HeadcountIntegration extends Component
             \yii\base\Event::on(
                 \justinholtweb\headcount\elements\Subscription::class,
                 \craft\base\Element::EVENT_AFTER_SAVE,
-                function ($event) {
+                function($event) {
                     $this->handleSubscriptionSave($event->sender);
                 }
             );

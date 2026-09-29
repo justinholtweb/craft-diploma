@@ -40,6 +40,7 @@ class Install extends Migration
         $this->createTable('{{%diploma_courses}}', [
             'id' => $this->integer()->notNull(),
             'courseStatus' => $this->string(20)->notNull()->defaultValue('draft'),
+            'enrollmentMode' => $this->string(20)->notNull()->defaultValue('open'),
             'difficultyLevel' => $this->string(20)->null(),
             'estimatedDuration' => $this->integer()->null(),
             'enrollmentLimit' => $this->integer()->null(),

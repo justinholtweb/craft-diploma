@@ -2,7 +2,6 @@
 
 namespace justinholtweb\diploma\services;
 
-use Craft;
 use craft\base\Component;
 use craft\helpers\StringHelper;
 use justinholtweb\diploma\models\DripSchedule;
@@ -42,6 +41,7 @@ class DripContent extends Component
             }
         } else {
             // Check for existing schedule for this lesson
+            /** @var DripScheduleRecord|null $record */
             $record = DripScheduleRecord::find()
                 ->where(['courseId' => $schedule->courseId, 'lessonId' => $schedule->lessonId])
                 ->one();

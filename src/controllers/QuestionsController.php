@@ -6,7 +6,6 @@ use Craft;
 use craft\web\Controller;
 use justinholtweb\diploma\models\Question;
 use justinholtweb\diploma\Plugin;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class QuestionsController extends Controller

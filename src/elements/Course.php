@@ -6,9 +6,8 @@ use Craft;
 use craft\base\Element;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Restore;
-use craft\elements\db\ElementQueryInterface;
-use craft\helpers\UrlHelper;
 use craft\enums\Color;
+use craft\helpers\UrlHelper;
 use justinholtweb\diploma\elements\db\CourseQuery;
 use justinholtweb\diploma\enums\CourseStatus;
 use justinholtweb\diploma\Plugin;
@@ -18,6 +17,7 @@ use yii\base\InvalidConfigException;
 class Course extends Element
 {
     public string $courseStatus = 'draft';
+    public string $enrollmentMode = 'open';
     public ?string $difficultyLevel = null;
     public ?int $estimatedDuration = null;
     public ?int $enrollmentLimit = null;
@@ -212,13 +212,13 @@ class Course extends Element
         return UrlHelper::cpUrl("diploma/courses/{$this->id}");
     }
 
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         return match ($attribute) {
             'courseStatus' => '<span class="status ' . CourseStatus::from($this->courseStatus)->color() . '"></span>' . CourseStatus::from($this->courseStatus)->label(),
             'difficultyLevel' => $this->difficultyLevel ? ucfirst($this->difficultyLevel) : '—',
             'estimatedDuration' => $this->estimatedDuration ? $this->estimatedDuration . ' min' : '—',
-            default => parent::tableAttributeHtml($attribute),
+            default => parent::attributeHtml($attribute),
         };
     }
 
@@ -257,6 +257,7 @@ class Course extends Element
         $rules = parent::defineRules();
         $rules[] = [['courseStatus'], 'required'];
         $rules[] = [['courseStatus'], 'in', 'range' => ['draft', 'published', 'archived']];
+        $rules[] = [['enrollmentMode'], 'in', 'range' => array_column(\justinholtweb\diploma\enums\EnrollmentMode::cases(), 'value')];
         $rules[] = [['difficultyLevel'], 'in', 'range' => ['beginner', 'intermediate', 'advanced'], 'skipOnEmpty' => true];
         $rules[] = [['estimatedDuration', 'enrollmentLimit', 'enrollmentCount', 'passingScore'], 'integer'];
         $rules[] = [['passingScore'], 'integer', 'min' => 0, 'max' => 100];
@@ -277,6 +278,7 @@ class Course extends Element
 
         $record->id = $this->id;
         $record->courseStatus = $this->courseStatus;
+        $record->enrollmentMode = $this->enrollmentMode;
         $record->difficultyLevel = $this->difficultyLevel;
         $record->estimatedDuration = $this->estimatedDuration;
         $record->enrollmentLimit = $this->enrollmentLimit;

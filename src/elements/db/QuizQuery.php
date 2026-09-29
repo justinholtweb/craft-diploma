@@ -5,6 +5,10 @@ namespace justinholtweb\diploma\elements\db;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 
+/**
+ * @method \justinholtweb\diploma\elements\Quiz[] all($db = null)
+ * @method \justinholtweb\diploma\elements\Quiz|null one($db = null)
+ */
 class QuizQuery extends ElementQuery
 {
     public ?int $courseId = null;

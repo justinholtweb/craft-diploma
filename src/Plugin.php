@@ -3,7 +3,6 @@
 namespace justinholtweb\diploma;
 
 use Craft;
-use craft\base\Element;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterComponentTypesEvent;
@@ -63,7 +62,7 @@ class Plugin extends BasePlugin
     public const EDITION_LITE = 'lite';
     public const EDITION_PRO = 'pro';
 
-    public string $schemaVersion = '1.1.0';
+    public string $schemaVersion = '1.2.0';
     public bool $hasCpSettings = true;
     public bool $hasCpSection = true;
 
@@ -107,7 +106,7 @@ class Plugin extends BasePlugin
         $this->registerTemplateVariable();
         $this->registerTwigExtension();
 
-        Craft::$app->onInit(function () {
+        Craft::$app->onInit(function() {
             $this->registerElementTypes();
             $this->registerCpRoutes();
             $this->registerSiteRoutes();
@@ -208,7 +207,7 @@ class Plugin extends BasePlugin
         Event::on(
             Elements::class,
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
-            function (RegisterComponentTypesEvent $event) {
+            function(RegisterComponentTypesEvent $event) {
                 $event->types[] = Course::class;
                 $event->types[] = Lesson::class;
                 $event->types[] = Quiz::class;
@@ -221,7 +220,7 @@ class Plugin extends BasePlugin
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
+            function(RegisterUrlRulesEvent $event) {
                 // Dashboard
                 $event->rules['diploma'] = 'diploma/dashboard/index';
 
@@ -268,7 +267,7 @@ class Plugin extends BasePlugin
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
+            function(RegisterUrlRulesEvent $event) {
                 // Front-end API
                 $event->rules['diploma/api/enroll'] = 'diploma/progress/enroll';
                 $event->rules['diploma/api/complete-lesson'] = 'diploma/progress/complete-lesson';
@@ -287,7 +286,7 @@ class Plugin extends BasePlugin
         Event::on(
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
-            function (RegisterUserPermissionsEvent $event) {
+            function(RegisterUserPermissionsEvent $event) {
                 $event->permissions[] = [
                     'heading' => Craft::t('diploma', 'Diploma'),
                     'permissions' => [
@@ -336,7 +335,7 @@ class Plugin extends BasePlugin
         Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
-            function (Event $event) {
+            function(Event $event) {
                 $event->sender->set('diploma', DiplomaVariable::class);
             }
         );
@@ -347,7 +346,7 @@ class Plugin extends BasePlugin
         Event::on(
             Dashboard::class,
             Dashboard::EVENT_REGISTER_WIDGET_TYPES,
-            function (RegisterComponentTypesEvent $event) {
+            function(RegisterComponentTypesEvent $event) {
                 $event->types[] = CourseOverviewWidget::class;
                 $event->types[] = EnrollmentWidget::class;
             }

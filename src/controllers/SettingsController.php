@@ -67,6 +67,10 @@ class SettingsController extends Controller
     public function actionSaveLessonFieldLayout(): ?Response
     {
         $this->requirePostRequest();
+        // Admins only: a field layout decides what every lesson can hold. Not
+        // requireAdminChanges — the lesson layout lives in the database, not project config,
+        // so it must stay editable where admin changes are off.
+        $this->requireAdmin(false);
 
         $fieldsService = Craft::$app->getFields();
         $fieldLayout = $fieldsService->assembleLayoutFromPost();
@@ -86,9 +90,19 @@ class SettingsController extends Controller
     public function actionSave(): ?Response
     {
         $this->requirePostRequest();
+        // Plugin settings are project config. Only admins may change them, and only where admin
+        // changes are allowed — otherwise a user with diploma:manageSettings could rewrite
+        // Commerce auto-enrolment on production, or drift it from the deployed config.
+        $this->requireAdmin(true);
 
-        $settings = Craft::$app->getRequest()->getBodyParam('settings', []);
+        $posted = Craft::$app->getRequest()->getBodyParam('settings', []);
         $plugin = Plugin::getInstance();
+
+        // Each settings page posts only its own fields, and savePluginSettings() writes exactly
+        // the keys it is given to project config — so saving the Certificates page used to
+        // erase the Headcount plan mapping and every other page's settings. Merge the posted
+        // values over the current ones and save the lot.
+        $settings = array_merge($plugin->getSettings()->toArray(), is_array($posted) ? $posted : []);
 
         if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
             Craft::$app->getSession()->setError(Craft::t('diploma', 'Couldn\'t save settings.'));

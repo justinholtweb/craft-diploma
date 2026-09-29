@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Element;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Restore;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use justinholtweb\diploma\elements\db\QuizQuery;
 use justinholtweb\diploma\Plugin;
@@ -136,14 +137,14 @@ class Quiz extends Element
         return UrlHelper::cpUrl("diploma/quizzes/{$this->id}");
     }
 
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         return match ($attribute) {
-            'courseId' => $this->getCourse()?->title ?? '—',
+            'courseId' => Html::encode($this->getCourse()->title ?? '—'),
             'passingScore' => $this->passingScore . '%',
             'timeLimit' => $this->timeLimit ? round($this->timeLimit / 60) . ' min' : '—',
             'maxAttempts' => $this->maxAttempts ?? 'Unlimited',
-            default => parent::tableAttributeHtml($attribute),
+            default => parent::attributeHtml($attribute),
         };
     }
 

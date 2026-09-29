@@ -4,7 +4,6 @@ namespace justinholtweb\diploma\services;
 
 use Craft;
 use craft\base\Component;
-use justinholtweb\diploma\models\Edition;
 use justinholtweb\diploma\Plugin;
 
 class CommerceIntegration extends Component
@@ -32,7 +31,7 @@ class CommerceIntegration extends Component
             \yii\base\Event::on(
                 \craft\commerce\elements\Order::class,
                 \craft\commerce\elements\Order::EVENT_AFTER_COMPLETE_ORDER,
-                function ($event) {
+                function($event) {
                     $this->handleOrderComplete($event->sender);
                 }
             );

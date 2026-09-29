@@ -12,7 +12,7 @@ use craft\db\ActiveRecord;
  * @property string|null $explanation
  * @property int $points
  * @property int $sortOrder
- * @property array|null $metadata
+ * @property string|null $metadata
  * @property string $dateCreated
  * @property string $dateUpdated
  * @property string $uid

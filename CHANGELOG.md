@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Security
+
+- **Learners could enrol themselves in paid courses for free.** The front-end `diploma/progress/enroll` action accepted any course ID from any logged-in user — including courses sold through Commerce or a Headcount membership, drafts, disabled courses, and courses whose enrolment had expired. Courses now have an **Enrollment** setting (Open, Purchase, Manual); self-enrolment is allowed only for enabled, published, open courses, and never for a course linked to a Commerce product (a `diplomaCourses` field) or a Headcount plan, whatever its setting says. On upgrade, every course that is already linked that way is set to Purchase.
+- **Quiz scores could be forged.** A submission could name another learner's attempt and overwrite their score, re-grade an attempt the learner had already finished (which also meant `maxAttempts` never ran out), answer every question with one question's correct answer ID, and score 100% by answering a single question. Attempts are now graded once, only by their owner, on the quiz and enrolment they were started for; answers must belong to the question they answer; and every question on the quiz counts towards the total.
+- **Plugin settings could be changed by non-admins.** Saving plugin settings — project config — needed only the *Manage settings* permission. It now needs an admin, where admin changes are allowed. The lesson field layout needs an admin too, and stays editable where admin changes are off because it is not stored in project config.
+
+### Fixed
+
+- **Saving one settings page erased the others.** Each settings page posts only its own fields, and Craft writes exactly the posted keys to project config — so saving the Certificates page wiped the Headcount plan mapping and the Commerce settings. The posted values are now merged over the current settings.
+- **A learner whose enrolment had expired or been cancelled could not be enrolled again.** Enrolments are unique per course and user, but re-enrolling always inserted a new row, which the index refused — so a Headcount member who re-subscribed stayed locked out. A lapsed enrolment is now reactivated by a purchase, a membership or an admin (but not by the learner enrolling themselves).
+- **Expired and cancelled enrolments could still complete lessons and sit quizzes**, and so still earn certificates. Both now require an active or completed enrolment.
+- Element index columns use Craft 5's `attributeHtml()`; the quiz index escapes the course title.
+
+### Added
+
+- Integration checks (`tests/integration/checks.php`, `http.php`) covering enrolment, grading and settings, including the attacks above; ECS configuration.
+
 ## 5.1.4 - 2026-09-17
 
 ### Fixed

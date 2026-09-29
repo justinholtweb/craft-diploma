@@ -6,7 +6,6 @@ use Craft;
 use craft\base\Component;
 use justinholtweb\diploma\elements\Course;
 
-
 class Courses extends Component
 {
     public function getById(int $id): ?Course

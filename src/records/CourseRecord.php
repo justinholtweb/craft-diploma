@@ -7,6 +7,7 @@ use craft\db\ActiveRecord;
 /**
  * @property int $id
  * @property string $courseStatus
+ * @property string $enrollmentMode
  * @property string|null $difficultyLevel
  * @property int|null $estimatedDuration
  * @property int|null $enrollmentLimit

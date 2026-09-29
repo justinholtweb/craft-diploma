@@ -60,6 +60,20 @@
             }) }}
         </div>
 
+        {{ forms.selectField({
+            label: 'Enrollment'|t('diploma'),
+            instructions: 'Who can enroll a learner. Commerce purchases, Headcount memberships and admins can always enroll; this decides whether learners may enroll themselves. Courses linked to a Commerce product or Headcount plan never allow self-enrollment.'|t('diploma'),
+            id: 'enrollmentMode',
+            name: 'enrollmentMode',
+            value: course.enrollmentMode,
+            options: [
+                { label: 'Open — learners enroll themselves'|t('diploma'), value: 'open' },
+                { label: 'Purchase — through Commerce or a Headcount membership'|t('diploma'), value: 'purchase' },
+                { label: 'Manual — admins enroll learners'|t('diploma'), value: 'manual' },
+            ],
+            errors: course.getErrors('enrollmentMode'),
+        }) }}
+
         <div class="diploma-field-row">
             {{ forms.textField({
                 label: 'Estimated Duration (minutes)'|t('diploma'),

@@ -13,7 +13,8 @@
     "require-dev": {
         "codeception/codeception": "^5.0",
         "craftcms/ecs": "dev-main",
-        "craftcms/phpstan": "dev-main"
+        "craftcms/phpstan": "dev-main",
+        "phpstan/phpstan": "^1.12 || ^2.2"
     },
     "suggest": {
         "dompdf/dompdf": "Required for PDF certificate generation (Pro edition)",
@@ -36,5 +37,11 @@
         "documentationUrl": "https://craft-diploma.com",
         "description": "LMS plugin for Craft CMS — courses, quizzes, progress tracking, and certificates.",
         "class": "justinholtweb\\diploma\\Plugin"
+    },
+    "config": {
+        "allow-plugins": {
+            "craftcms/plugin-installer": true,
+            "yiisoft/yii2-composer": true
+        }
     }
 }
