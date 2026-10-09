@@ -59,7 +59,7 @@ class ProgressController extends Controller
         }
 
         $enrollment = Plugin::getInstance()->enrollments->getEnrollment($lesson->courseId, $userId);
-        if (!$enrollment || !in_array($enrollment->enrollmentStatus, ['active', 'completed'], true)) {
+        if (!$enrollment || !in_array($enrollment->enrollmentStatus, ['active', 'completed'], true) || $enrollment->hasExpired()) {
             return $this->asFailure('Not enrolled in this course.');
         }
 

@@ -28,4 +28,21 @@ class Enrollment extends Model
             [['source'], 'string', 'max' => 50],
         ];
     }
+
+    /**
+     * Whether the enrolment's access period has run out. `expiresAt` is stored in UTC.
+     *
+     * The `diploma/enrollments/expire` command turns such enrolments into `expired` ones; until it
+     * runs, this is what keeps an overdue enrolment from being used.
+     */
+    public function hasExpired(?\DateTimeInterface $now = null): bool
+    {
+        if ($this->expiresAt === null || $this->expiresAt === '') {
+            return false;
+        }
+
+        $expiresAt = new \DateTime($this->expiresAt, new \DateTimeZone('UTC'));
+
+        return $expiresAt <= ($now ?? new \DateTime());
+    }
 }

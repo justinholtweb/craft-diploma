@@ -11,6 +11,7 @@ use justinholtweb\diploma\enums\ActivityType;
 use justinholtweb\diploma\events\CertificateEvent;
 use justinholtweb\diploma\events\EnrollmentEvent;
 use justinholtweb\diploma\events\LessonCompletionEvent;
+use justinholtweb\diploma\events\LessonUnlockEvent;
 use justinholtweb\diploma\events\QuizAttemptEvent;
 use justinholtweb\diploma\models\ActivityLog as ActivityLogModel;
 use justinholtweb\diploma\Plugin;
@@ -125,6 +126,63 @@ class ActivityLog extends Component
             'data' => [
                 'courseTitle' => $courseTitle,
                 'verificationCode' => $certificate->verificationCode,
+            ],
+        ]);
+    }
+
+    public function handleReissueCertificate(CertificateEvent $event): void
+    {
+        $certificate = $event->certificate;
+        $courseTitle = $this->courseTitle($certificate->courseId);
+
+        $this->log(ActivityType::CertificateReissued->value, [
+            'userId' => $certificate->userId,
+            'courseId' => $certificate->courseId,
+            'enrollmentId' => $certificate->enrollmentId,
+            'message' => Craft::t('diploma', 'Certificate reissued for “{course}”', ['course' => $courseTitle]),
+            'data' => [
+                'courseTitle' => $courseTitle,
+                'verificationCode' => $certificate->verificationCode,
+            ],
+        ]);
+    }
+
+    public function handleExpire(EnrollmentEvent $event): void
+    {
+        $enrollment = $event->enrollment;
+        $courseTitle = $this->courseTitle($enrollment->courseId);
+
+        $this->log(ActivityType::EnrollmentExpired->value, [
+            'userId' => $enrollment->userId,
+            'courseId' => $enrollment->courseId,
+            'enrollmentId' => $enrollment->id,
+            'message' => Craft::t('diploma', 'Access to “{course}” expired', ['course' => $courseTitle]),
+            'data' => [
+                'courseTitle' => $courseTitle,
+                'userName' => $this->userName($enrollment->userId),
+                'expiresAt' => $enrollment->expiresAt,
+            ],
+        ]);
+    }
+
+    /**
+     * Records a drip unlock. Called by `DripContent::unlockDue()` itself rather than through the
+     * event, because this row is also the ledger that stops the unlock being announced twice.
+     */
+    public function handleUnlockLesson(LessonUnlockEvent $event): ?ActivityLogModel
+    {
+        $lesson = Lesson::find()->id($event->lessonId)->status(null)->one();
+        $lessonTitle = $lesson->title ?? (string)$event->lessonId;
+
+        return $this->log(ActivityType::LessonUnlocked->value, [
+            'userId' => $event->userId,
+            'courseId' => $event->courseId,
+            'lessonId' => $event->lessonId,
+            'enrollmentId' => $event->enrollmentId,
+            'message' => Craft::t('diploma', 'Lesson “{lesson}” unlocked', ['lesson' => $lessonTitle]),
+            'data' => [
+                'lessonTitle' => $lessonTitle,
+                'unlockedAt' => $event->unlockedAt->format(DATE_ATOM),
             ],
         ]);
     }

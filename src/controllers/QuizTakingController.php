@@ -29,7 +29,7 @@ class QuizTakingController extends Controller
         // An expired or cancelled enrolment does not get to sit the quiz (or earn the
         // certificate a pass issues). Completed learners may retake.
         $enrollment = Plugin::getInstance()->enrollments->getEnrollment($quiz->courseId, $userId);
-        if (!$enrollment || !in_array($enrollment->enrollmentStatus, ['active', 'completed'], true)) {
+        if (!$enrollment || !in_array($enrollment->enrollmentStatus, ['active', 'completed'], true) || $enrollment->hasExpired()) {
             return $this->asFailure('Not enrolled in this course.');
         }
 

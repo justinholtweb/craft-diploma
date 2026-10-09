@@ -42,6 +42,12 @@
             <dt>{{ 'Completed'|t('diploma') }}</dt>
             <dd>{{ enrollment.completedAt ? enrollment.completedAt|date('M j, Y g:ia') : '—' }}</dd>
         </div>
+        {% if enrollment.expiresAt %}
+            <div class="data">
+                <dt>{{ 'Expires'|t('diploma') }}</dt>
+                <dd>{{ enrollment.expiresAt|date('M j, Y g:ia') }}{% if enrollment.hasExpired() %} ({{ 'passed'|t('diploma') }}){% endif %}</dd>
+            </div>
+        {% endif %}
     </div>
 
     <hr>

@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Console commands** for doing enrolment and certificate work in bulk, and from cron. Each takes `--dry-run` and `--course=<id or slug>`.
+  - `diploma/enrollments/import <file.csv> --course=…` enrols learners from a CSV file (`email`, `status`, `date`, `completed`, `expires`) — for moving a customer over from another LMS. Rows already enrolled are skipped, lapsed enrolments are reactivated, bad rows are reported without stopping the rest, and `--create-users` creates a pending user for an unknown email.
+  - `diploma/enrollments/expire` marks active enrolments whose expiry date has passed as Expired.
+  - `diploma/certificates/reissue` rebuilds certificates' course title and learner name from the current data, keeping verification codes and issue dates; `--missing` issues certificates to completed enrolments that have none.
+  - `diploma/drip/unlock` (Pro) announces drip lessons as they unlock: one activity-log entry and one event per learner and lesson.
+- New events: `Enrollments::EVENT_AFTER_EXPIRE`, `Certificates::EVENT_AFTER_REISSUE_CERTIFICATE` and `DripContent::EVENT_AFTER_UNLOCK_LESSON` (`LessonUnlockEvent`), with matching activity-log entries (Enrollment expired, Certificate reissued, Lesson unlocked).
+- The enrolment screen shows an enrolment's expiry date.
+
+### Fixed
+
+- **An enrolment's expiry date was never enforced.** An active enrolment past its `expiresAt` kept unlocking lessons and sitting quizzes. It now loses access as soon as the date passes, and reactivating an enrolment (a new purchase, membership or admin) clears the old date.
+
 ## 5.2.0 - 2026-09-29
 
 ### Security

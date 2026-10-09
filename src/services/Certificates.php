@@ -7,9 +7,11 @@ use craft\base\Component;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use justinholtweb\diploma\events\CertificateEvent;
+use justinholtweb\diploma\models\BulkResult;
 use justinholtweb\diploma\models\Certificate;
 use justinholtweb\diploma\Plugin;
 use justinholtweb\diploma\records\CertificateRecord;
+use justinholtweb\diploma\records\EnrollmentRecord;
 
 class Certificates extends Component
 {
@@ -17,6 +19,12 @@ class Certificates extends Component
      * @event CertificateEvent Fired after a certificate is issued.
      */
     public const EVENT_AFTER_ISSUE_CERTIFICATE = 'afterIssueCertificate';
+
+    /**
+     * @event CertificateEvent Fired after a certificate's snapshot is rebuilt by
+     * `diploma/certificates/reissue`.
+     */
+    public const EVENT_AFTER_REISSUE_CERTIFICATE = 'afterReissueCertificate';
 
     public function issue(int $enrollmentId, int $userId, int $courseId): ?Certificate
     {
@@ -41,12 +49,7 @@ class Certificates extends Component
         $record->uid = StringHelper::UUID();
 
         // Snapshot metadata
-        $record->metadata = json_encode([
-            'courseTitle' => $course->title ?? '',
-            'userName' => $user->friendlyName ?? '',
-            'userEmail' => $user->email ?? '',
-            'issuedDate' => date('F j, Y'),
-        ]);
+        $record->metadata = json_encode($this->snapshot($course, $user, date('F j, Y')));
 
         if (!$record->save()) {
             return null;
@@ -156,6 +159,117 @@ class Certificates extends Component
         } while (CertificateRecord::find()->where(['verificationCode' => $code])->exists());
 
         return $code;
+    }
+
+    /**
+     * Rebuilds certificates' snapshots — the course title and learner's name and email printed on
+     * them — from the current course and user, after a course was renamed, a learner changed their
+     * name, or the certificate template started using a value older certificates never stored.
+     *
+     * The verification code and issue date are kept, so links and printed copies stay valid; the
+     * PDF and verification page render through the current template either way. What
+     * `diploma/certificates/reissue` runs.
+     */
+    public function reissue(?int $courseId = null, bool $dryRun = false): BulkResult
+    {
+        $result = new BulkResult(['dryRun' => $dryRun]);
+        $query = CertificateRecord::find()->orderBy(['id' => SORT_ASC]);
+
+        if ($courseId !== null) {
+            $query->where(['courseId' => $courseId]);
+        }
+
+        foreach ($query->each() as $record) {
+            /** @var CertificateRecord $record */
+            $course = \justinholtweb\diploma\elements\Course::find()->id($record->courseId)->status(null)->one();
+            $user = Craft::$app->getUsers()->getUserById((int)$record->userId);
+
+            if ($course === null || $user === null) {
+                $result->skipped[] = "{$record->verificationCode}: the " . ($course === null ? 'course' : 'learner') . ' no longer exists; the snapshot is kept.';
+                continue;
+            }
+
+            $old = $record->metadata ? (json_decode($record->metadata, true) ?: []) : [];
+            $issuedDate = $old['issuedDate'] ?? ($record->issuedAt ? date('F j, Y', strtotime($record->issuedAt . ' UTC')) : date('F j, Y'));
+            $snapshot = array_merge($old, $this->snapshot($course, $user, $issuedDate));
+
+            if ($snapshot === $old) {
+                $result->skipped[] = "{$record->verificationCode}: already up to date.";
+                continue;
+            }
+
+            if (!$dryRun) {
+                $record->metadata = json_encode($snapshot);
+
+                if (!$record->save(false)) {
+                    $result->failures[] = "{$record->verificationCode}: could not be saved.";
+                    continue;
+                }
+
+                if ($this->hasEventHandlers(self::EVENT_AFTER_REISSUE_CERTIFICATE)) {
+                    $this->trigger(self::EVENT_AFTER_REISSUE_CERTIFICATE, new CertificateEvent([
+                        'certificate' => $this->recordToModel($record),
+                    ]));
+                }
+            }
+
+            $result->done[] = "{$record->verificationCode}: {$snapshot['userName']} — {$snapshot['courseTitle']}.";
+        }
+
+        return $result;
+    }
+
+    /**
+     * Issues the certificate every completed enrolment should have and doesn't — enrolments
+     * imported as completed, or finished while certificates were switched off.
+     */
+    public function issueMissing(?int $courseId = null, bool $dryRun = false): BulkResult
+    {
+        $result = new BulkResult(['dryRun' => $dryRun]);
+
+        $query = EnrollmentRecord::find()
+            ->alias('e')
+            ->leftJoin(['c' => CertificateRecord::tableName()], '[[c.enrollmentId]] = [[e.id]]')
+            ->where(['e.enrollmentStatus' => 'completed', 'c.id' => null])
+            ->orderBy(['e.id' => SORT_ASC]);
+
+        if ($courseId !== null) {
+            $query->andWhere(['e.courseId' => $courseId]);
+        }
+
+        foreach ($query->each() as $enrollment) {
+            /** @var EnrollmentRecord $enrollment */
+            $label = "Enrollment #{$enrollment->id} (user #{$enrollment->userId}, course #{$enrollment->courseId})";
+
+            if ($dryRun) {
+                $result->done[] = "$label: would be issued a certificate.";
+                continue;
+            }
+
+            $certificate = $this->issue((int)$enrollment->id, (int)$enrollment->userId, (int)$enrollment->courseId);
+
+            if ($certificate === null) {
+                $result->failures[] = "$label: the certificate could not be issued.";
+                continue;
+            }
+
+            $result->done[] = "$label: issued {$certificate->verificationCode}.";
+        }
+
+        return $result;
+    }
+
+    /**
+     * The values a certificate keeps from the moment it was issued.
+     */
+    private function snapshot(?\justinholtweb\diploma\elements\Course $course, ?\craft\elements\User $user, string $issuedDate): array
+    {
+        return [
+            'courseTitle' => $course->title ?? '',
+            'userName' => $user->friendlyName ?? '',
+            'userEmail' => $user->email ?? '',
+            'issuedDate' => $issuedDate,
+        ];
     }
 
     private function recordToModel(CertificateRecord $record): Certificate

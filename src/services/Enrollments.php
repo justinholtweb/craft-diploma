@@ -4,9 +4,12 @@ namespace justinholtweb\diploma\services;
 
 use Craft;
 use craft\base\Component;
+use craft\elements\User;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use justinholtweb\diploma\events\EnrollmentEvent;
+use justinholtweb\diploma\models\BulkResult;
 use justinholtweb\diploma\models\Enrollment;
 use justinholtweb\diploma\Plugin;
 use justinholtweb\diploma\records\EnrollmentRecord;
@@ -23,6 +26,17 @@ class Enrollments extends Component
      * (i.e. the user finished the course).
      */
     public const EVENT_AFTER_COMPLETE_COURSE = 'afterCompleteCourse';
+
+    /**
+     * @event EnrollmentEvent Fired after an enrollment's access period ran out and
+     * `diploma/enrollments/expire` marked it expired.
+     */
+    public const EVENT_AFTER_EXPIRE = 'afterExpire';
+
+    /**
+     * The statuses an imported row may carry.
+     */
+    public const IMPORT_STATUSES = ['active', 'completed', 'cancelled', 'expired'];
 
     public function getEnrollment(int $courseId, int $userId): ?Enrollment
     {
@@ -47,6 +61,10 @@ class Enrollments extends Component
         return $this->recordToModel($record);
     }
 
+    /**
+     * Whether the user holds an active enrolment whose access period (if it has one) has not run
+     * out. An overdue enrolment stops counting at once, not when the expire command next runs.
+     */
     public function isEnrolled(int $courseId, int $userId): bool
     {
         return EnrollmentRecord::find()
@@ -55,6 +73,7 @@ class Enrollments extends Component
                 'userId' => $userId,
                 'enrollmentStatus' => 'active',
             ])
+            ->andWhere(['or', ['expiresAt' => null], ['>', 'expiresAt', Db::prepareDateForDb(new \DateTime())]])
             ->exists();
     }
 
@@ -102,6 +121,7 @@ class Enrollments extends Component
 
             $existing->enrollmentStatus = 'active';
             $existing->enrolledAt = Db::prepareDateForDb(new \DateTime());
+            $existing->expiresAt = null;
             $existing->source = $source;
             $existing->sourceId = $sourceId;
 
@@ -294,6 +314,189 @@ class Enrollments extends Component
             ->all();
 
         return array_map([$this, 'recordToModel'], $records);
+    }
+
+    /**
+     * Enrols a list of learners in one course — what `diploma/enrollments/import` runs over a CSV
+     * file when a customer moves from another LMS.
+     *
+     * Each row is keyed by lower-case column name: `email` (required), `status` (`active` by
+     * default, or `completed`, `cancelled`, `expired`), `date` (when they enrolled), `completed`
+     * (when they finished) and `expires` (when access ends). Dates are read in the system time zone.
+     *
+     * Rows are independent: a bad row is reported and the rest carry on. An existing active or
+     * completed enrolment is left alone, so the same file can be imported twice; a lapsed one is
+     * reactivated. Enrolments go through {@see enroll()} with the source `import`, so the course's
+     * enrolment limit and the `afterEnroll` event (and the activity log) apply as usual.
+     *
+     * @param array<int, array<string, string|null>> $rows
+     * @param bool $createUsers Create a pending user for an email nobody has yet. They set a
+     *   password through *Forgot password* or an activation email sent from the Users screen.
+     */
+    public function import(int $courseId, array $rows, bool $dryRun = false, bool $createUsers = false): BulkResult
+    {
+        $result = new BulkResult(['dryRun' => $dryRun]);
+        $line = 1;
+
+        foreach ($rows as $row) {
+            $line++;
+
+            try {
+                $this->importRow($courseId, $row, $line, $dryRun, $createUsers, $result);
+            } catch (\Throwable $e) {
+                Craft::error("Diploma import, line $line: " . $e->getMessage(), __METHOD__);
+                $result->failures[] = "Line $line: " . $e->getMessage();
+            }
+        }
+
+        return $result;
+    }
+
+    private function importRow(int $courseId, array $row, int $line, bool $dryRun, bool $createUsers, BulkResult $result): void
+    {
+        $email = trim((string)($row['email'] ?? ''));
+        $status = strtolower(trim((string)($row['status'] ?? ''))) ?: 'active';
+
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $result->failures[] = "Line $line: “{$email}” is not an email address.";
+            return;
+        }
+
+        if (!in_array($status, self::IMPORT_STATUSES, true)) {
+            $result->failures[] = "Line $line ($email): unknown status “{$status}”.";
+            return;
+        }
+
+        $dates = [];
+
+        foreach (['date' => 'enrolledAt', 'completed' => 'completedAt', 'expires' => 'expiresAt'] as $column => $attribute) {
+            $value = trim((string)($row[$column] ?? ''));
+
+            if ($value === '') {
+                continue;
+            }
+
+            $date = DateTimeHelper::toDateTime($value);
+
+            if ($date === false) {
+                $result->failures[] = "Line $line ($email): “{$value}” is not a date ({$column}).";
+                return;
+            }
+
+            $dates[$attribute] = $date;
+        }
+
+        $user = User::find()->email(Db::escapeParam($email))->status(null)->one();
+
+        if ($user === null && !$createUsers) {
+            $result->failures[] = "Line $line: no user has the email $email (use --create-users to create one).";
+            return;
+        }
+
+        /** @var EnrollmentRecord|null $existing */
+        $existing = $user ? EnrollmentRecord::find()->where(['courseId' => $courseId, 'userId' => $user->id])->one() : null;
+
+        if ($existing && in_array($existing->enrollmentStatus, ['active', 'completed'], true)) {
+            $result->skipped[] = "$email: already enrolled ({$existing->enrollmentStatus}).";
+            return;
+        }
+
+        $verb = $existing ? 'reactivated' : 'enrolled';
+        $what = "$email: $verb as $status" . ($user === null ? ' (new user)' : '') . '.';
+
+        if ($dryRun) {
+            $result->done[] = $what;
+            return;
+        }
+
+        if ($user === null) {
+            $user = new User();
+            $user->email = $email;
+            $user->username = $email;
+            $user->pending = true;
+
+            if (!Craft::$app->getElements()->saveElement($user)) {
+                $result->failures[] = "Line $line ($email): the user could not be created — " . implode(' ', $user->getFirstErrors());
+                return;
+            }
+        }
+
+        $enrollment = $this->enroll($courseId, (int)$user->id, 'import');
+
+        if ($enrollment === null) {
+            $result->failures[] = "Line $line ($email): could not enrol — the course may be full.";
+            return;
+        }
+
+        if ($status === 'completed') {
+            $this->markCompleted((int)$enrollment->id);
+        } elseif ($status !== 'active') {
+            $this->updateStatus((int)$enrollment->id, $status);
+        }
+
+        if ($dates !== []) {
+            $record = EnrollmentRecord::findOne($enrollment->id);
+
+            foreach ($dates as $attribute => $date) {
+                if ($attribute === 'completedAt' && $status !== 'completed') {
+                    continue;
+                }
+
+                $record->$attribute = Db::prepareDateForDb($date);
+            }
+
+            $record->save(false);
+        }
+
+        $result->done[] = $what;
+    }
+
+    /**
+     * Marks every active enrolment whose `expiresAt` has passed as expired, firing
+     * {@see EVENT_AFTER_EXPIRE} for each. What `diploma/enrollments/expire` runs from cron.
+     *
+     * Completed enrolments are left alone — finishing a course is a record, not access.
+     */
+    public function expireDue(?int $courseId = null, bool $dryRun = false): BulkResult
+    {
+        $result = new BulkResult(['dryRun' => $dryRun]);
+
+        $query = EnrollmentRecord::find()
+            ->where(['enrollmentStatus' => 'active'])
+            ->andWhere(['not', ['expiresAt' => null]])
+            ->andWhere(['<=', 'expiresAt', Db::prepareDateForDb(new \DateTime())])
+            ->orderBy(['id' => SORT_ASC]);
+
+        if ($courseId !== null) {
+            $query->andWhere(['courseId' => $courseId]);
+        }
+
+        foreach ($query->each() as $record) {
+            /** @var EnrollmentRecord $record */
+            $label = "Enrollment #{$record->id} (user #{$record->userId}, course #{$record->courseId}), expired {$record->expiresAt} UTC.";
+
+            if ($dryRun) {
+                $result->done[] = $label;
+                continue;
+            }
+
+            $record->enrollmentStatus = 'expired';
+
+            if (!$record->save(false)) {
+                $result->failures[] = "Enrollment #{$record->id}: could not be saved.";
+                continue;
+            }
+
+            $result->done[] = $label;
+
+            if ($this->hasEventHandlers(self::EVENT_AFTER_EXPIRE)) {
+                $this->trigger(self::EVENT_AFTER_EXPIRE, new EnrollmentEvent([
+                    'enrollment' => $this->recordToModel($record),
+                ]));
+            }
+        }
+
+        return $result;
     }
 
     private function recordToModel(EnrollmentRecord $record): Enrollment

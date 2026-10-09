@@ -396,5 +396,19 @@ class Plugin extends BasePlugin
             Certificates::EVENT_AFTER_ISSUE_CERTIFICATE,
             fn(CertificateEvent $event) => $activityLog->handleIssueCertificate($event)
         );
+
+        Event::on(
+            Certificates::class,
+            Certificates::EVENT_AFTER_REISSUE_CERTIFICATE,
+            fn(CertificateEvent $event) => $activityLog->handleReissueCertificate($event)
+        );
+
+        Event::on(
+            Enrollments::class,
+            Enrollments::EVENT_AFTER_EXPIRE,
+            fn(EnrollmentEvent $event) => $activityLog->handleExpire($event)
+        );
+
+        // Drip unlocks are logged by DripContent::unlockDue() directly — the row is its ledger.
     }
 }

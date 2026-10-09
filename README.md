@@ -90,6 +90,8 @@ Manage enrollments from **Diploma > Enrollments**. Users can be enrolled manuall
 
 Enrollment statuses: Active, Completed, Cancelled, Expired.
 
+An enrollment can carry an expiry date (set by the CSV import below). Once it passes, the learner loses access straight away — lessons lock and quizzes refuse them — and `diploma/enrollments/expire` marks the enrollment Expired the next time it runs. Reactivating an enrollment clears its expiry date.
+
 ### Certificates
 
 When a user completes a course (and passes any required quizzes), a certificate is automatically issued with a unique verification code. Certificates can be:
@@ -230,6 +232,58 @@ All endpoints require a logged-in user.
 | GET | `/diploma/api/progress/<courseId>` | Get progress for a course |
 | GET | `/diploma/certificate/verify/<code>` | Public certificate verification |
 | GET | `/diploma/certificate/download/<code>` | Download PDF certificate (Pro) |
+
+## Console Commands
+
+Everything here also works from the CP one learner at a time; the commands are for doing it in bulk, and from cron. Each takes `--dry-run` to report what it would do without writing anything, and `--course=<id or slug>` to limit it to one course. They exit non-zero if any row failed.
+
+### Import enrollments
+
+Moving learners over from another LMS:
+
+```bash
+php craft diploma/enrollments/import learners.csv --course=intro-to-craft --dry-run
+php craft diploma/enrollments/import learners.csv --course=intro-to-craft --create-users
+```
+
+The first row of the CSV names the columns:
+
+| Column | Required | Meaning |
+|---|---|---|
+| `email` | Yes | The learner's email address |
+| `status` | No | `active` (default), `completed`, `cancelled` or `expired` |
+| `date` | No | When they enrolled |
+| `completed` | No | When they finished (for `completed` rows) |
+| `expires` | No | When their access ends |
+
+Dates are read in the system time zone, in any format PHP understands (`2025-01-15`, `2025-01-15 09:30`). Learners already enrolled (active or completed) are skipped, so a file can be imported twice; a cancelled or expired enrollment is reactivated. The course's enrollment limit still applies, and each row is logged in the activity log with the source `import`. A row for an email no user has is reported — unless you pass `--create-users`, which creates a pending user for it; they set a password with *Forgot password*, or you can send activation emails from **Users**.
+
+Imported `completed` rows don't get a certificate on their own: run `diploma/certificates/reissue --missing` afterwards.
+
+### Expire enrollments
+
+```bash
+php craft diploma/enrollments/expire
+```
+
+Marks every active enrollment whose expiry date has passed as Expired, logs it, and fires `Enrollments::EVENT_AFTER_EXPIRE`. Completed enrollments are left alone. Run it from cron, daily or hourly.
+
+### Reissue certificates
+
+```bash
+php craft diploma/certificates/reissue --course=intro-to-craft
+php craft diploma/certificates/reissue --missing
+```
+
+A certificate keeps a snapshot of the course title and the learner's name and email from the day it was issued. After renaming a course, a learner changing their name, or a template change that prints those values, `reissue` rebuilds the snapshots from the current data. Verification codes and issue dates are kept, so shared links and printed copies stay valid. `--missing` also issues a certificate to every completed enrollment that has none (imported completions, or courses finished while certificates were off).
+
+### Drip unlocks (Pro)
+
+```bash
+php craft diploma/drip/unlock
+```
+
+Drip lessons open on their own — access is checked against the enrollment date on every request. This command is what lets something *happen* when one does: for each learner whose drip lesson has unlocked since the last run, it writes a "Lesson unlocked" activity-log entry and fires `DripContent::EVENT_AFTER_UNLOCK_LESSON` (a `LessonUnlockEvent` with `enrollmentId`, `userId`, `courseId`, `lessonId` and `unlockedAt`) — hook that to email the learner. Each unlock is announced once per enrollment. Unlocks older than `--lookback` days (7 by default) are ignored, so the first run doesn't announce months of old lessons. Run it from cron, hourly or daily. A lesson that also has a prerequisite stays locked until that's done; check `isLessonUnlocked()` before promising access.
 
 ## Commerce Integration (Pro)
 

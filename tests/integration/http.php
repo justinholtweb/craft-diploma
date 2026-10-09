@@ -169,6 +169,24 @@ check('an honest full pass still works', function() use ($quiz) {
     return $code === 200 && ($json['score'] ?? null) == 100 && ($json['passed'] ?? false) === true ?: "HTTP $code " . json_encode($json);
 });
 
+check('an active enrolment past its expiry date cannot sit the quiz before the expire command runs', function() use ($quiz, $openCourse, $learner) {
+    $e = dc()->enrollments->getEnrollment($openCourse->id, $learner->id);
+    $record = justinholtweb\diploma\records\EnrollmentRecord::findOne($e->id);
+    $before = $record->enrollmentStatus;
+    $record->expiresAt = craft\helpers\Db::prepareDateForDb(new DateTime('-1 hour'));
+    $record->save(false);
+
+    [$code, $json] = post('diploma/quiz-taking/submit', [
+        'quizId' => $quiz['quiz']->id,
+        'responses' => responses(array_combine($quiz['questions'], $quiz['correct'])),
+    ]);
+
+    $record->expiresAt = null;
+    $record->save(false);
+
+    return $code === 400 && str_contains(json_encode($json), 'Not enrolled') && in_array($before, ['active', 'completed'], true) ?: "status $before, HTTP $code " . json_encode($json);
+});
+
 check('an expired enrolment cannot sit the quiz', function() use ($quiz, $openCourse, $learner) {
     $e = dc()->enrollments->getEnrollment($openCourse->id, $learner->id);
     dc()->enrollments->updateStatus($e->id, 'expired');

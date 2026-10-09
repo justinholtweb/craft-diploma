@@ -18,6 +18,23 @@ class Courses extends Component
         return Course::find()->slug($slug)->one();
     }
 
+    /**
+     * Finds a course by ID or slug, whatever its status — how the console commands' `--course`
+     * option names one. A migration usually imports into a course before it is published.
+     */
+    public function resolve(string $ref): ?Course
+    {
+        $ref = trim($ref);
+
+        if ($ref === '') {
+            return null;
+        }
+
+        $query = Course::find()->status(null);
+
+        return ctype_digit($ref) ? $query->id((int)$ref)->one() : $query->slug(\craft\helpers\Db::escapeParam($ref))->one();
+    }
+
     public function save(Course $course): bool
     {
         return Craft::$app->getElements()->saveElement($course);

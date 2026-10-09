@@ -15,6 +15,9 @@ enum ActivityType: string
     case QuizFailed = 'quizFailed';
     case CourseCompleted = 'courseCompleted';
     case CertificateIssued = 'certificateIssued';
+    case CertificateReissued = 'certificateReissued';
+    case EnrollmentExpired = 'enrollmentExpired';
+    case LessonUnlocked = 'lessonUnlocked';
 
     public function label(): string
     {
@@ -27,6 +30,9 @@ enum ActivityType: string
             self::QuizFailed => 'Quiz failed',
             self::CourseCompleted => 'Course completed',
             self::CertificateIssued => 'Certificate issued',
+            self::CertificateReissued => 'Certificate reissued',
+            self::EnrollmentExpired => 'Enrollment expired',
+            self::LessonUnlocked => 'Lesson unlocked',
         };
     }
 
@@ -41,6 +47,9 @@ enum ActivityType: string
             self::QuizFailed => 'red',
             self::CourseCompleted => 'green',
             self::CertificateIssued => 'yellow',
+            self::CertificateReissued => 'yellow',
+            self::EnrollmentExpired => 'red',
+            self::LessonUnlocked => 'teal',
         };
     }
 }
