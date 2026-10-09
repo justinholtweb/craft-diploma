@@ -1,7 +1,6 @@
 # Changelog
 
-## Unreleased
-
+## 5.3.0 - 2026-10-09
 ### Added
 
 - **Console commands** for doing enrolment and certificate work in bulk, and from cron. Each takes `--dry-run` and `--course=<id or slug>`.
